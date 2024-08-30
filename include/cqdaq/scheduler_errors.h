@@ -1,0 +1,20 @@
+
+#pragma once
+#include <coretypes/errors.h>
+
+/*!
+ * @ingroup cqdaq_errors_group
+ * @addtogroup cqdaq_errors_macros Error Code Macros
+ * @{
+ */
+
+#define CQDAQ_ERRTYPE_SCHEDULER 0x04u
+
+#define CQDAQ_ERR_SCHEDULER_UNKNOWN CQDAQ_ERROR_CODE(CQDAQ_ERRTYPE_SCHEDULER, 0x0000u)
+#define CQDAQ_ERR_SCHEDULER_STOPPED CQDAQ_ERROR_CODE(CQDAQ_ERRTYPE_SCHEDULER, 0x0001u)
+#define CQDAQ_ERR_NOT_ENOUGH_TASKS  CQDAQ_ERROR_CODE(CQDAQ_ERRTYPE_SCHEDULER, 0x0002u)
+#define CQDAQ_ERR_EMPTY_AWAITABLE   CQDAQ_ERROR_CODE(CQDAQ_ERRTYPE_SCHEDULER, 0x0003u)
+
+/*!
+ * @}
+ */

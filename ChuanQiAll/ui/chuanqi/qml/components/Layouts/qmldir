@@ -1,0 +1,24 @@
+﻿module Layouts
+Bottombar 1.0 Bottombar.qml
+PageView 1.0 PageView.qml
+Sidebar 1.0 Sidebar.qml
+SideInterface 1.0 SideInterface.qml
+TopSidebar 1.0 TopSidebar.qml
+FullView1 1.0 side/FullView1.qml
+FullView2 1.0 side/FullView2.qml
+FullView3 1.0 side/FullView3.qml
+HalfView1 1.0 side/HalfView1.qml
+HalfView2 1.0 side/HalfView2.qml
+HalfView3 1.0 side/HalfView3.qml
+AppConfiguration 1.0 side/FullView1Inside/AppConfiguration.qml
+HeaderInformation 1.0 side/FullView1Inside/HeaderInformation.qml
+StorageMode 1.0 side/FullView1Inside/StorageMode.qml
+HardwareConfiguration 1.0 side/FullView3Inside/HardwareConfiguration.qml
+InterfaceSet 1.0 side/FullView3Inside/InterfaceSet.qml
+PluginManagement 1.0 side/FullView3Inside/PluginManagement.qml
+RemoteControl 1.0 side/FullView3Inside/RemoteControl.qml
+StartupSet 1.0 side/FullView3Inside/StartupSet.qml
+SaveMode 1.0 side/FullView3Inside/SaveMode.qml
+Synchronous 1.0 side/FullView3Inside/Synchronous.qml
+SystemInformation 1.0 side/FullView3Inside/SystemInformation.qml
+

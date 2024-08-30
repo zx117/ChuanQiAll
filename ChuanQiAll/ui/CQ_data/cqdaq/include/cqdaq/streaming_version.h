@@ -1,0 +1,5 @@
+#pragma once
+
+#define DAQ_STREAMING_MAJOR_VERSION    1u
+#define DAQ_STREAMING_MINOR_VERSION    0u
+#define DAQ_STREAMING_PATCH_VERSION    0u

@@ -1,0 +1,5 @@
+#pragma once
+
+#define DAQ_DEVICE_MAJOR_VERSION    1u
+#define DAQ_DEVICE_MINOR_VERSION    0u
+#define DAQ_DEVICE_PATCH_VERSION    0u

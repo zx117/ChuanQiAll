@@ -1,0 +1,108 @@
+
+#pragma once
+#include <coretypes/type_manager.h>
+#include <coretypes/event.h>
+#include <cqdaq/logger.h>
+#include <coretypes/dictobject.h>
+
+BEGIN_NAMESPACE_CQDAQ
+
+struct IScheduler;
+struct IModuleManager;
+
+/*!
+ * @ingroup cqdaq_utility
+ * @addtogroup cqdaq_context Context
+ * @{
+ */
+
+/*!
+ * @brief The Context serves as a container for the Scheduler and Logger. It originates
+ * at the instance, and is passed to the root device, which forwards it to components
+ * such as function blocks and signals.
+ *
+ * Note: The context holds a strong reference to the Module Manager until  the reference is moved via the
+ * ContextInternal move function. The strong reference moved to an external owner to avoid memory leaks
+ * due to circular references. This is done automatically when the Context is used in the cqDAQ Instance
+ * constructor.
+ */
+
+/*#
+ * [interfaceLibrary(ITypeManager, "coretypes")]
+ * [interfaceLibrary(ICoreEventArgs, "coreobjects")]
+ * [interfaceSmartPtr(IComponent, ComponentPtr, "<cqdaq/context_ptr.fwd_declare.h>")]
+ * [includeHeader("<coretypes/event_wrapper.h>")]
+ */
+DECLARE_CQDAQ_INTERFACE(IContext, IBaseObject)
+{
+    /*!
+     * @brief Gets the scheduler.
+     * @param[out] scheduler The scheduler.
+     */
+    virtual ErrCode INTERFACE_FUNC getScheduler(IScheduler** scheduler) = 0;
+    /*!
+     * @brief Gets the logger.
+     * @param[out] logger The logger.
+     */
+    virtual ErrCode INTERFACE_FUNC getLogger(ILogger** logger) = 0;
+    /*!
+     * @brief Gets the Module Manager as a Base Object.
+     * @param[out] manager The module manager.
+     */
+    virtual ErrCode INTERFACE_FUNC getModuleManager(IBaseObject** manager) = 0;
+    /*!
+     * @brief Gets the Type Manager.
+     * @param[out] manager The type manager.
+     */
+    virtual ErrCode INTERFACE_FUNC getTypeManager(ITypeManager** manager) = 0;
+
+    // [templateType(event, IComponent, ICoreEventArgs)]
+    /*!
+     * @brief Gets the Core Event object that triggers whenever a change happens within the cqDAQ core structure.
+     * @param[out] event The Core Event object. The event triggers with a Component reference and a CoreEventArgs object as arguments.
+     *
+     * The Core Event is triggered on various changes to the cqDAQ Components. This includes changes to property values,
+     * addition/removal of child components, connecting signals to input ports and others. The event type can be identified
+     * via the event ID available within the CoreEventArgs object. Each event type has a set of predetermined parameters
+     * available in the `parameters` field of the arguments. These can be used by any cqDAQ server, or other listener to
+     * react to changes within the core structure.
+     */
+    virtual ErrCode INTERFACE_FUNC getOnCoreEvent(IEvent** event) = 0;
+
+    // [templateType(options, IString, IBaseObject)]
+    /*!
+     * @brief Gets the dictionary of options 
+     * @param[out] options The dictionary of options
+     */
+    virtual ErrCode INTERFACE_FUNC getOptions(IDict** options) = 0;
+
+    // [templateType(options, IString, IBaseObject)]
+    /*!
+     * @brief Retrieves the options associated with the specified module ID.
+     * @param moduleId The identifier of the module for which options are requested.
+     * @param[out] options A dictionary containing the options associated with the specified module ID.
+     */
+    virtual ErrCode INTERFACE_FUNC getModuleOptions(IString* moduleId, IDict** options) = 0;
+};
+/*!@}*/
+
+/*!
+ * @ingroup cqdaq_context
+ * @addtogroup cqdaq_context_factories Factories
+ * @{
+ */
+
+// [templateType(options, IStringObject, IBaseObject)]
+
+CQDAQ_DECLARE_CLASS_FACTORY(
+    LIBRARY_FACTORY, Context,
+    IScheduler*, Scheduler,
+    ILogger*, Logger,
+    ITypeManager*, typeManager,
+    IModuleManager*, moduleManager,
+    IDict*, options
+)
+
+/*!@}*/
+
+END_NAMESPACE_CQDAQ

@@ -1,0 +1,5 @@
+#pragma once
+
+#define DAQ_UTILITY_MAJOR_VERSION    1u
+#define DAQ_UTILITY_MINOR_VERSION    0u
+#define DAQ_UTILITY_PATCH_VERSION    0u

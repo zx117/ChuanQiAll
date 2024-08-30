@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/nav_10.png</file>
+        <file>images/nav_10@2x.png</file>
+        <file>appdemoMain.qml</file>
+        <file>Layout/SpectrogramSet.qml</file>
+        <file>Layout/TrendSet.qml</file>
+        <file>Layout/OscilloscopeSet.qml</file>
+        <file>Layout/VectorSet.qml</file>
+        <file>Layout/Report.qml</file>
+        <file>Layout/Oscilloscope.qml</file>
+        <file>Layout/Spectrogram.qml</file>
+        <file>Layout/Trend.qml</file>
+        <file>Layout/Vector.qml</file>
+        <file>AppdemoAppSet.qml</file>
+        <file>AppdemoSetting.qml</file>
+    </qresource>
+</RCC>

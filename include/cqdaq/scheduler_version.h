@@ -1,0 +1,5 @@
+#pragma once
+
+#define DAQ_SCHEDULER_MAJOR_VERSION    1u
+#define DAQ_SCHEDULER_MINOR_VERSION    0u
+#define DAQ_SCHEDULER_PATCH_VERSION    0u

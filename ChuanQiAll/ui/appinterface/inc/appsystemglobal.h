@@ -1,0 +1,10 @@
+#ifndef APPSYSTEM_GLOBAL_H
+#define APPSYSTEM_GLOBAL_H
+
+#if defined(APP_LIBRARY)
+#  define APP_LIBRARY_API Q_DECL_EXPORT
+#else
+#  define APP_LIBRARY_API Q_DECL_IMPORT
+#endif
+
+#endif // APPSYSTEM_GLOBAL_H

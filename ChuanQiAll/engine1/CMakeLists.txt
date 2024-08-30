@@ -1,0 +1,6 @@
+add_subdirectory(uni)
+add_subdirectory(base)
+add_subdirectory(api)
+add_subdirectory(framework)
+add_subdirectory(daq)
+add_subdirectory(core)

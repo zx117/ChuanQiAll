@@ -1,0 +1,4 @@
+﻿module Dialogs
+OpenDataFile 1.0 OpenDataFile.qml
+OpenSetFile 1.0 OpenSetFile.qml
+SaveSetFile 1.0 SaveSetFile.qml

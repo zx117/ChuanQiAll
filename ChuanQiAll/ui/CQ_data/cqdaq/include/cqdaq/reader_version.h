@@ -1,0 +1,5 @@
+#pragma once
+
+#define DAQ_READER_MAJOR_VERSION    1u
+#define DAQ_READER_MINOR_VERSION    0u
+#define DAQ_READER_PATCH_VERSION    0u

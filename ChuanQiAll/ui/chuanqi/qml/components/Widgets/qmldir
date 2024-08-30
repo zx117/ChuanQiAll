@@ -1,0 +1,23 @@
+﻿module Widgets
+
+HeaderInfChild 1.0 HeaderInfChild.qml
+BaseCheckBox 1.0 BaseCheckBox.qml
+BaseCombobox 1.0 BaseCombobox.qml
+BaseListView 1.0 BaseListView.qml
+BasePopup 1.0 BasePopup.qml
+BaseRadioButton 1.0 BaseRadioButton.qml
+BaseScroll 1.0 BaseScroll.qml
+BaseSlider 1.0 BaseSlider.qml
+BaseSwitch 1.0 BaseSwitch.qml
+BaseTableView 1.0 BaseTableView.qml
+BaseTextInput 1.0 BaseTextInput.qml
+BaseTextLarge 1.0 BaseTextLarge.qml
+BaseTextModerate 1.0 BaseTextModerate.qml
+BaseTextSmall 1.0 BaseTextSmall.qml
+BaseToolTip 1.0 BaseToolTip.qml
+BaseTree 1.0 BaseTree.qml
+IconButton 1.0 button/IconButton.qml
+IconTextButton 1.0 button/IconTextButton.qml
+TextButton 1.0 button/TextButton.qml
+FileSystemList 1.0 popup/FileSystemList.qml
+FileSystemTree 1.0 popup/FileSystemTree.qml

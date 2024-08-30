@@ -1,0 +1,5 @@
+#pragma once
+#include <coretypes/common.h>
+
+#define BEGIN_NAMESPACE_SAVE_MODULE BEGIN_NAMESPACE_CQDAQ_MODULE(ref_save_module)
+#define END_NAMESPACE_SAVE_MODULE END_NAMESPACE_CQDAQ_MODULE

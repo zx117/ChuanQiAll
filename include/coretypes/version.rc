@@ -1,0 +1,55 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+1 VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "042404b0"
+        BEGIN 
+            VALUE "Comments", "Configured on 2024-07-22T13:42:56"
+            VALUE "CompanyName", "ChuanQi.Co.,Ltd."
+            VALUE "FileDescription", "CoreTypes"
+#ifdef _DEBUG
+            VALUE "FileVersion", "1.0.0.-debug"
+#else
+            VALUE "FileVersion", "1.0.0."
+#endif          
+            VALUE "InternalName", "CoreTypes"
+            VALUE "LegalCopyright", "Copyright ChuanQi.Co.,Ltd. (C) 2024"
+#ifdef _DEBUG
+            VALUE "OriginalFilename", "daqcoretypes-64-1-debug.dll"
+#else
+            VALUE "OriginalFilename", "daqcoretypes-64-1.dll"
+#endif
+            VALUE "ProductName", "CoreTypes"
+#ifdef _DEBUG
+            VALUE "ProductVersion", "1.0.0.-debug"
+#else
+            VALUE "ProductVersion", "1.0.0."
+#endif
+
+#ifdef _DEBUG
+			VALUE "Source Branch", ""
+			VALUE "Source Hash", ""
+#endif			
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x424, 1200
+    END
+END

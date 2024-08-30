@@ -1,0 +1,147 @@
+#include "api_acquisition_task_xml.h"
+#include "api_version_xml.h"
+
+#include "base_basic_values.h"
+
+#include "uni_xpugixml.h"
+
+#include <boost/lexical_cast.hpp>
+
+namespace cq
+{
+    AddAcquisitionTaskTelegram::AddAcquisitionTaskTelegram() noexcept
+        : m_id()
+    {}
+
+    bool AddAcquisitionTaskTelegram::parse(const boost::string_view& xml_string)
+    {
+        if (xml_string.empty())
+        {
+            return false;
+        }
+
+        pugi::xml_document doc;
+        auto status = doc.load_buffer(xml_string.data(), xml_string.size(), pugi::parse_default, pugi::encoding_utf8);
+        if (status.status == pugi::status_ok)
+        {
+            try
+            {
+                auto acq_task_node = doc.document_element();
+
+                auto version = cq::getProtocolVersion(acq_task_node);
+                if (version != cq::Version(1,0))
+                {
+                    return false;
+                }
+
+                m_id = acq_task_node.attribute("acquisition_task_key").as_ullong();
+
+                auto input_channel_nodes = acq_task_node.select_nodes("InputChannels/Channel");
+                for (auto channel_node : input_channel_nodes)
+                {
+                    auto a_channel_node = channel_node.node();
+                    auto a_ch_id = a_channel_node.attribute("channel_id").as_ullong();
+                    m_input_channels.push_back(a_ch_id);
+                }
+
+                auto output_channel_nodes = acq_task_node.select_nodes("OutputChannels/Channel");
+                for (auto channel_node : output_channel_nodes)
+                {
+                    auto a_channel_node = channel_node.node();
+                    auto a_ch_id = a_channel_node.attribute("channel_id").as_ullong();
+                    m_output_channels.push_back(a_ch_id);
+                }
+            }
+            catch (const boost::bad_lexical_cast&)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    std::string AddAcquisitionTaskTelegram::generate() const
+    {
+        pugi::xml_document doc;
+        auto acq_task_node = doc.append_child("AcquisitionTaskAdd");
+
+        cq::setProtocolVersion(acq_task_node, cq::Version(1,0));
+
+        acq_task_node.append_attribute("acquisition_task_key").set_value(m_id);
+
+        auto input_channels_node = acq_task_node.append_child("InputChannels");
+        for (const auto& channel : m_input_channels)
+        {
+            auto channel_node = input_channels_node.append_child("Channel");
+            channel_node.append_attribute("channel_id").set_value(channel);
+        }
+
+        auto output_channels_node = acq_task_node.append_child("OutputChannels");
+        for (const auto& channel : m_output_channels)
+        {
+            auto channel_node = output_channels_node.append_child("Channel");
+            channel_node.append_attribute("channel_id").set_value(channel);
+        }
+
+        return xpugi::toXML(doc);
+    }
+
+    bool AcquisitionTaskProcessTelegram::parse(const boost::string_view& xml_string)
+    {
+        if (xml_string.empty())
+        {
+            return false;
+        }
+
+        pugi::xml_document doc;
+        auto status = doc.load_buffer(xml_string.data(), xml_string.size(), pugi::parse_default, pugi::encoding_utf8);
+        if (status.status == pugi::status_ok)
+        {
+            try
+            {
+                auto acq_task_node = doc.document_element();
+
+                auto version = cq::getProtocolVersion(acq_task_node);
+                if (version != cq::Version(1,0))
+                {
+                    return false;
+                }
+
+                if(auto start_node = acq_task_node.child("Start"))
+                {
+                    m_start.parseTickFrequencyAttributes(start_node);
+                }
+
+                if(auto end_node = acq_task_node.child("End"))
+                {
+                    m_end.parseTickFrequencyAttributes(end_node);
+                }
+            }
+            catch (const boost::bad_lexical_cast&)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    std::string AcquisitionTaskProcessTelegram::generate() const
+    {
+        pugi::xml_document doc;
+        auto acq_task_node = doc.append_child("AcquisitionTaskProcess");
+
+        cq::setProtocolVersion(acq_task_node, cq::Version(1,0));
+
+        {
+            auto start_timestamp_node = acq_task_node.append_child("Start");
+            m_start.writeTickFrequencyAttributes(start_timestamp_node);
+        }
+
+        {
+            auto end_timestamp_node = acq_task_node.append_child("End");
+            m_end.writeTickFrequencyAttributes(end_timestamp_node);
+        }
+        return xpugi::toXML(doc);
+    }
+
+}

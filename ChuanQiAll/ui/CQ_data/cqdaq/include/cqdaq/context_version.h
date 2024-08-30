@@ -1,0 +1,5 @@
+#pragma once
+
+#define DAQ_CONTEXT_MAJOR_VERSION    1u
+#define DAQ_CONTEXT_MINOR_VERSION    0u
+#define DAQ_CONTEXT_PATCH_VERSION    0u

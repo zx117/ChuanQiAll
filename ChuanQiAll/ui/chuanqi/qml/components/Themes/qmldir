@@ -1,0 +1,14 @@
+﻿module Themes
+SkinBase 1.0 SkinBase.qml
+SkinFontBase 1.0 SkinFontBase.qml
+FontProperties 1.0 Font/FontProperties.qml
+ButtonStyle 1.0 WidgetsStyle/ButtonStyle.qml
+RectangelStyle 1.0 WidgetsStyle/RectangelStyle.qml
+SideBarStyle 1.0 WidgetsStyle/SideBarStyle.qml
+singleton SkinWhite 1.0 SkinWhite.qml
+singleton SkinBlack 1.0 SkinBlack.qml
+singleton SkinManager 1.0 SkinManager.qml
+singleton SkinLargeFont 1.0 SkinLargeFont.qml
+singleton SkinModerateFont 1.0 SkinModerateFont.qml
+singleton SkinSmallFont 1.0 SkinSmallFont.qml
+

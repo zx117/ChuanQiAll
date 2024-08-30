@@ -1,0 +1,5 @@
+#pragma once
+
+#define DAQ_SERVER_MAJOR_VERSION    1u
+#define DAQ_SERVER_MINOR_VERSION    0u
+#define DAQ_SERVER_PATCH_VERSION    0u

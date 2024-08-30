@@ -1,0 +1,177 @@
+
+#pragma once
+#include <coretypes/common.h>
+#include <cqdaq/logger_sink_ptr.h>
+#include <algorithm>
+
+BEGIN_NAMESPACE_CQDAQ
+
+/*!
+ * @ingroup cqdaq_logger_sink
+ * @addtogroup cqdaq_logger_sink_factories Factories
+ * @{
+ */
+
+/*!
+ * @brief Creates a Logger Sink object with Stderr as a target.
+ */
+inline LoggerSinkPtr StdErrLoggerSink()
+{
+    return LoggerSinkPtr(StdErrLoggerSink_Create());
+}
+
+/*!
+ * @brief Creates a Logger Sink object with Stdout as a target.
+ */
+inline LoggerSinkPtr StdOutLoggerSink()
+{
+    return LoggerSinkPtr(StdOutLoggerSink_Create());
+}
+
+/*!
+ * @brief Creates a Logger Sink object with rotating files as a target.
+ * @param fileName The base name of the files.
+ * @param maxFileSize The maximum size of each file.
+ * @param maxFiles The maximum count of files.
+ */
+inline LoggerSinkPtr RotatingFileLoggerSink(const StringPtr& fileName, SizeT maxFileSize, SizeT maxFiles)
+{
+    return LoggerSinkPtr(RotatingFileLoggerSink_Create(fileName, maxFileSize, maxFiles));
+}
+
+/*!
+ * @brief Creates a Logger Sink object with basic file as a target.
+ * @param fileName The name of the file.
+ */
+inline LoggerSinkPtr BasicFileLoggerSink(const StringPtr& fileName)
+{
+    return LoggerSinkPtr(BasicFileLoggerSink_Create(fileName));
+}
+
+#ifdef _WIN32
+/*!
+ * @brief Creates a Logger Sink object with WinDebug output as a target.
+ */
+inline LoggerSinkPtr WinDebugLoggerSink()
+{
+    return LoggerSinkPtr(WinDebugLoggerSink_Create());
+}
+
+#endif
+
+
+inline LoggerSinkPtr LastMessageLoggerSink()
+{
+    return LoggerSinkPtr(LastMessageLoggerSink_Create());
+}
+
+
+inline LogLevel getEnvLogLevel(const std::string& envStr, int defaultLevel)
+{
+    int level = defaultLevel;
+    char* env = std::getenv(envStr.c_str());
+    if (env != nullptr)
+    {
+        try
+        {
+            level = std::stoi(env);
+            if (level < 0 || level >= CQDAQ_LOG_LEVEL_DEFAULT)
+                level = defaultLevel;
+        }
+        catch (...)
+        {
+            level = defaultLevel;
+        }
+    }
+
+    return static_cast<LogLevel>(level);
+}
+
+inline void getEnvFileSinkLogLevelAndFileName(LogLevel& level, std::string& fileName)
+{
+    level = getEnvLogLevel("CQDAQ_SINK_FILE_LOG_LEVEL", CQDAQ_LOG_LEVEL_TRACE);
+    char* env = std::getenv("CQDAQ_SINK_FILE_FILE_NAME");
+    if (env != nullptr)
+        fileName = env;
+    else
+        fileName.clear();
+}
+
+/*!
+ * @brief Creates a list of Sink objects.
+ * @param fileName The base file name for rotating files sink.
+ *
+ * The rotating files sink is present in the created list if @p fileName is provided,
+ * otherwise only Stdout and WinDebug sinks are present
+ */
+inline ListPtr<ILoggerSink> DefaultSinks(const StringPtr& fileName = nullptr)
+{
+    auto sinks = List<ILoggerSink>();
+
+    int logLevel;
+#ifdef NDEBUG
+    logLevel = CQDAQ_LOG_LEVEL_WARN;
+#else
+    logLevel = CQDAQ_LOG_LEVEL_INFO;
+#endif
+
+    auto consoleSinkLogLevel = getEnvLogLevel("CQDAQ_SINK_CONSOLE_LOG_LEVEL", logLevel);
+    if (consoleSinkLogLevel != LogLevel::Off)
+    {
+        auto consoleSink = StdOutLoggerSink();
+        consoleSink.setLevel(consoleSinkLogLevel);
+        sinks.pushBack(consoleSink);
+    }
+
+#if defined(_WIN32)
+    auto winDebugSinkLogLevel = getEnvLogLevel("CQDAQ_SINK_WINDEBUG_LOG_LEVEL", logLevel);
+    if (winDebugSinkLogLevel != LogLevel::Off)
+    {
+        auto winDebugSink = WinDebugLoggerSink();
+        winDebugSink.setLevel(winDebugSinkLogLevel);
+        sinks.pushBack(winDebugSink);
+    }
+#endif
+
+    std::string fileSinkFileName;
+    LogLevel fileSinkLogLevel;
+    getEnvFileSinkLogLevelAndFileName(fileSinkLogLevel, fileSinkFileName);
+    if (fileSinkFileName.empty() && fileName.assigned())
+        fileSinkFileName = fileName.toStdString();
+
+    if (!fileSinkFileName.empty())
+    {
+        auto fileSink = RotatingFileLoggerSink(fileSinkFileName, 1048576, 5);
+        fileSink.setLevel(fileSinkLogLevel);
+        sinks->pushBack(fileSink);
+    }
+
+    return sinks;
+}
+
+/*!@}*/
+
+inline LogLevel LogLevelFromString(const StringPtr logLevelName)
+{
+    std::string name = logLevelName.toStdString();
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+    if (name == "trace")
+        return LogLevel::Trace;
+    if (name == "debug")
+        return LogLevel::Debug;
+    if (name == "info")
+        return LogLevel::Info;
+    if (name == "warn")
+        return LogLevel::Warn;
+    if (name == "error")
+        return LogLevel::Error;
+    if (name == "critical")
+        return LogLevel::Critical;
+    if (name == "off")
+        return LogLevel::Off;
+
+    return LogLevel::Trace;
+}
+
+END_NAMESPACE_CQDAQ
