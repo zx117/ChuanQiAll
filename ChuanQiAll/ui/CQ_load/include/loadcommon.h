@@ -1,0 +1,5 @@
+#pragma once
+#include <coretypes/common.h>
+
+#define BEGIN_NAMESPACE_LOAD_MODULE BEGIN_NAMESPACE_CQDAQ_MODULE(ref_load_module)
+#define END_NAMESPACE_LOAD_MODULE END_NAMESPACE_CQDAQ_MODULE

@@ -7,6 +7,7 @@
 #include <coreobjects/property_object.h>
 #include <coretypes/listobject.h>
 #include <cqdaq/device_type.h>
+#include <cqdaq/data_center_config.h>
 
 BEGIN_NAMESPACE_CQDAQ
 
@@ -96,7 +97,7 @@ DECLARE_CQDAQ_INTERFACE(IDevice, IFolder)
      *
      * Device signals are most often domain signals shared by other signals that belong to channels and/or function blocks.
      */
-    virtual ErrCode INTERFACE_FUNC getSignals(IList** cq_signals, ISearchFilter* searchFilter = nullptr) = 0;
+    virtual ErrCode INTERFACE_FUNC getSignals(IList** ls_signals, ISearchFilter* searchFilter = nullptr) = 0;
 
     // [elementType(signals, ISignal)]
     /*!
@@ -107,7 +108,7 @@ DECLARE_CQDAQ_INTERFACE(IDevice, IFolder)
      * The list includes visible signals that belong to visible channels, function blocks, or sub devices
      * of the device.
      */
-    virtual ErrCode INTERFACE_FUNC getSignalsRecursive(IList** cq_signals, ISearchFilter* searchFilter = nullptr) = 0;
+    virtual ErrCode INTERFACE_FUNC getSignalsRecursive(IList** ls_signals, ISearchFilter* searchFilter = nullptr) = 0;
 
     // [elementType(channels, IChannel)]
     /*!
@@ -229,6 +230,8 @@ DECLARE_CQDAQ_INTERFACE(IDevice, IFolder)
      * To scale the ticks into a domain unit, the Device's Domain should be used.
      */
     virtual ErrCode INTERFACE_FUNC getTicksSinceOrigin(UInt* ticks) = 0;
+
+    virtual ErrCode INTERFACE_FUNC setDataCenter(IDataCenterConfig* dcConfig) = 0;
 };
 /*!@}*/
 

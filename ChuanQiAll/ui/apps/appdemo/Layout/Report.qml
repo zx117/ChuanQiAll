@@ -5,7 +5,6 @@ import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.4
 import Themes 1.0
 import Widgets 1.0
-import MyTableModel 1.0
 Item {
 
     TabView {

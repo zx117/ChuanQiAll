@@ -1,9 +1,11 @@
 
 #pragma once
+#include <cqdaq/ncc.h>
 #include <cqdaq/context.h>
 #include <cqdaq/device.h>
 #include <cqdaq/module_manager.h>
 #include <cqdaq/server.h>
+#include <cqdaq/data_center.h>
 
 BEGIN_NAMESPACE_CQDAQ
 
@@ -34,6 +36,18 @@ struct IInstanceBuilder;
  */
 DECLARE_CQDAQ_INTERFACE(IInstance, IDevice)
 {
+    /*!
+     * @brief Gets the ncc manager.
+     * @param[out] ncc The ncc manager.
+     */
+  	virtual ErrCode INTERFACE_FUNC getNccManager(INcc** ncc) = 0;
+
+        /*!
+     * @brief Gets the ncc manager.
+     * @param[out] ncc The ncc manager.
+     */
+  	virtual ErrCode INTERFACE_FUNC getDataCenter(IDataCenter** dc) = 0;
+
     /*!
      * @brief Gets the Module manager.
      * @param[out] manager The module manager.
@@ -137,6 +151,13 @@ CQDAQ_DECLARE_CLASS_FACTORY_WITH_INTERFACE(
  */
 CQDAQ_DECLARE_CLASS_FACTORY_WITH_INTERFACE_AND_CREATEFUNC(
     LIBRARY_FACTORY, Client, IDevice, createClient,
+    IContext*, ctx,
+    IString*, localId,
+    IDeviceInfo*, defaultDeviceInfo,
+    IComponent*, parent
+)
+CQDAQ_DECLARE_CLASS_FACTORY_WITH_INTERFACE_AND_CREATEFUNC(
+    LIBRARY_FACTORY, DataCenter, IDevice, createDataCenter,
     IContext*, ctx,
     IString*, localId,
     IDeviceInfo*, defaultDeviceInfo,

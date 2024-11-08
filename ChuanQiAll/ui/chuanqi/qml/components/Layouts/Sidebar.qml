@@ -6,7 +6,6 @@ import QtQuick.Shapes 1.13
 import Widgets 1.0
 import Themes 1.0
 import Layouts 1.0
-import MyListModel 1.0
 Shape {
     id: sidebar
     width: 45
@@ -221,7 +220,6 @@ Shape {
                         ctx.lineTo(0, cornersRadius[0]);
                         ctx.quadraticCurveTo(0, 7, cornersRadius[0], 5);
 
-                        console.log(sidebarstate,isActive)
                         ctx.closePath();
                         ctx.fillStyle = sidebarstate!=="hidescreen"?(isActive?side.activefillColor:side.normalfillColor):side.normalfillColor
                         ctx.fill();
@@ -406,7 +404,6 @@ Shape {
                                 }
                                 else if(sidebar.state==="fullscreen")
                                 {
-
                                     button.forceActiveFocus()
                                     loadPage(model.qmlFile)
                                     listView.currentIndex = index;
@@ -419,10 +416,8 @@ Shape {
                                                 loadPage(model.qmlFile1)
                                             }
                                         }
-
                                         listModel.get(i).isActive = (i === index);
                                     }
-
                                 }
                             }
                         }
@@ -434,7 +429,13 @@ Shape {
 
     }
     function loadPage(qmlFile) {
-        overloader.source = "qrc:/qml/components/Layouts/side/"+qmlFile
+        var component = Qt.createComponent("qrc:/qml/components/Layouts/side/" + qmlFile);
+            // 检查组件创建是否成功
+            if (component.status === Component.Ready) {
+                overloader.sourceComponent = component; // 成功加载时赋值给 sourceComponent
+            } else if (component.status === Component.Error) {
+                console.error("Component creation error: " + component.errorString());
+            }
     }
     Connections{
         target: sideslip
@@ -458,8 +459,6 @@ Shape {
             {
                 loadPage(listModel.get(0).qmlFile);
             }
-
-
         }
     }
 

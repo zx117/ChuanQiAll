@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/nav_10.png</file>
+        <file>images/nav_10@2x.png</file>
+        <file>fastfrequencyAppSet.qml</file>
+        <file>fastfrequencyMain.qml</file>
+        <file>fastfrequencySetting.qml</file>
+    </qresource>
+</RCC>

@@ -1,4 +1,5 @@
 ﻿import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import Widgets 1.0
@@ -132,6 +133,7 @@ Item {
                     width: parent.width
                     contentWidth: width
                     contentHeight: layout.height
+                    ScrollBar.vertical: ScrollBar{}
                     clip: true
                     GridLayout {
                         id: layout

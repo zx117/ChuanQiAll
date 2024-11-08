@@ -6,10 +6,17 @@
 #include <cqdaq/data_descriptor_ptr.h>
 #include <coreobjects/eval_value_factory.h>
 
-#include "dispatch.h"
+// #include "dispatch.h"
+
 #include "savesqldata.h"
+#include "connectionpool.h"
+#include "threadpool.hpp"
+#include "recorddao.h"
+#include "configrationdao.h"
 
 #include <iostream>
+#include <QDateTime>
+
 
 BEGIN_NAMESPACE_SAVE_MODULE
 
@@ -18,7 +25,7 @@ namespace SaveData
 {
 
 SaveFuncBlock::SaveFuncBlock(const ContextPtr& ctx, const ComponentPtr& parent, const StringPtr& localId)
-    : FunctionBlock(CreateType(), ctx, parent, localId),
+    : FunctionBlockImpl<IFunctionBlock, ICommunication>(CreateType(), ctx, parent, localId),
     inputPortCount(0),
     startMesure(true),
     startSave(true),
@@ -28,14 +35,7 @@ SaveFuncBlock::SaveFuncBlock(const ContextPtr& ctx, const ComponentPtr& parent, 
     multiFileIndex(0)
 {
     updateInputPorts();
-    dbManager = new SaveSqlData();
-    dbManager->openDB(dbName);
-    saveClock.restart();
     saveMinutes = pieceMinutes;
-
-    dbManager->getDataByID("AI_1", 2);
-
-    // saveThread = std::thread{ &SaveFuncBlock::renderLoop, this };
 }
 
 SaveFuncBlock::~SaveFuncBlock()
@@ -83,9 +83,20 @@ void SaveFuncBlock::onConnected(const InputPortPtr &inputPort)
     updateInputPorts();
     auto sig = inputPort.getSignal();
     auto sigDes = sig.getDescriptor();
-    auto nameSig = sigDes.getName().toStdString();
+    auto sigName = sigDes.getName().toStdString();
+    auto nameSig = sigName + "_scaled";
+    auto nameReduced = sigName + "_reduced";
     std::replace(nameSig.begin(), nameSig.end(), ' ', '_');
-    int res = dbManager->createTable(nameSig);
+    std::replace(nameReduced.begin(), nameReduced.end(), ' ', '_');
+    std::cout << "+========= onConnected " << nameSig << std::endl << std::flush;
+
+    threadPool->enqueue([this](std::string tableName) ->void {
+        dbManager->createTable(tableName);
+    }, nameSig);
+
+    threadPool->enqueue([this](std::string tableName) ->void {
+        dbManager->createTable(tableName);
+    }, nameReduced);
 
     for (size_t i = 0; i < saveContexts.size(); i++)
     {
@@ -94,8 +105,6 @@ void SaveFuncBlock::onConnected(const InputPortPtr &inputPort)
             saveContexts[i].tableName = nameSig;
         }
     }
-    dbManager->createTable(nameSig);
-    std::cout << "+========= onConnected " << res << saveContexts.size() << nameSig << inputPort.getLocalId() <<  std::endl;
 
     LOG_T("Connected to port {}", inputPort.getLocalId());
 }
@@ -103,7 +112,7 @@ void SaveFuncBlock::onConnected(const InputPortPtr &inputPort)
 void SaveFuncBlock::onDisconnected(const InputPortPtr &inputPort)
 {
     std::scoped_lock lock(sync);
-    updateInputPorts();
+    updateInputPorts(); // todo zxx
 
     LOG_T("Disconnected from port {}", inputPort.getLocalId());
 }
@@ -115,7 +124,6 @@ void SaveFuncBlock::subscribeToSignalCoreEvent(const SignalPtr& signal)
 
 void SaveFuncBlock::renderLoop()
 {
-    std::cout << "+========= renderLoop start\n";
     std::unique_lock<std::mutex> lock(sync);
     const auto defaultWaitTime = std::chrono::milliseconds(20);
     auto waitTime = defaultWaitTime;
@@ -152,12 +160,10 @@ void SaveFuncBlock::prepareSignalContext(SignalContext& signalContext)
     const auto conn = signalContext.inputPort.getConnection();
     if (!conn.assigned())
         return;
-    // std::cout << "=========processSignalContext 111: " << signalContext.index << signalContext.tableName << testIndex << std::endl;
+
     PacketPtr packet = conn.dequeue();
-    while (packet.assigned())
+    if (packet.assigned())
     {
-        // std::cout << "=========processSignalContext 111: " << (packet.getType() == PacketType::Event)
-            // << (packet.getType() == PacketType::Data) << std::endl;
         if (packet.getType() == PacketType::Event)
         {
             auto eventPacket = packet.asPtr<IEventPacket>(true);
@@ -172,12 +178,15 @@ void SaveFuncBlock::prepareSignalContext(SignalContext& signalContext)
         {
             auto dataPacket = packet.asPtr<IDataPacket>();
             // processDataPacket(signalContext, dataPacket);
-            if(signalContext.tableName == "AI_1")
-                ++testIndex;
+            if(signalContext.tableName == "AI_16"){
+                ++signalContext.testID;
+                if (signalContext.testID == 300)
+                    startSave = false;
+            }
+
             signalContext.dataPackets.push_front(dataPacket);
             // SAMPLE_TYPE_DISPATCH(signalContext.domainSampleType, processSaveData, signalContext, dataPacket)
         }
-        packet = conn.dequeue();
     }
 }
 
@@ -196,38 +205,38 @@ void SaveFuncBlock::processDataPacket(SignalContext &signalContext, const DataPa
     }
 
     signalContext.dataPackets.push_back(dataPacket);
-    SAMPLE_TYPE_DISPATCH(signalContext.domainSampleType, processSaveData, signalContext, dataPacket)
+    // SAMPLE_TYPE_DISPATCH(signalContext.domainSampleType, processSaveData, signalContext, dataPacket)
 }
 
 void SaveFuncBlock::processSaveContexts()
 {
     for(int i = 0; i < saveContexts.size(); ++i){
         SignalContext &sigCtx = saveContexts[i];
-        std::thread t([this, &sigCtx](){
-
         if (sigCtx.dataPackets.empty())
             return;
-        else
+
+        for (auto packetIt = sigCtx.dataPackets.begin(); packetIt != sigCtx.dataPackets.end();)
         {
-            auto packetIt = sigCtx.dataPackets.begin();
-            if(packetIt != sigCtx.dataPackets.end())
-            {
-                auto data = (*packetIt).getData();
-                size_t count = (*packetIt).getDataSize();
-                std::vector<char> charVector(count);
-                std::memcpy(charVector.data(), data, count);
-                this->dbManager->insertData(sigCtx.tableName, charVector, count, testSId, sigCtx.sampTypeStr);
-                packetIt = sigCtx.dataPackets.erase(packetIt);
-                if(sigCtx.tableName == "AI_1"){
-                    ++testSId;
-                }
-            }
-            else {
-                ++packetIt;
-            }
+            auto data = (*packetIt).getData();
+            auto timeData = (*packetIt).getDomainPacket().getData();
+            auto test_s = (*packetIt).getDomainPacket().getDataSize();
+            size_t count = (*packetIt).getDataSize();
+            std::cout << "=====test_s:" << test_s << count << "\n";
+            std::vector<char> charVector(count);
+            std::memcpy(charVector.data(), data, count);
+            std::vector<char> timeVector(count);
+            std::memcpy(timeVector.data(), timeData, count);
+            Data paraData(count, 0, charVector, timeVector, sigCtx.sampTypeStr, sigCtx.level, 0, 0);
+            // threadPool->enqueue([this](std::string tableName, Data data) -> void{
+            //     dbManager->insertData(tableName, data);
+            // }, sigCtx.tableName, paraData);
+
+            dbManager->execute_in_thread([](){},
+                                         &SaveSqlData::insertData, dbManager,
+                                         sigCtx.tableName, paraData);
+
+            packetIt = sigCtx.dataPackets.erase(packetIt);
         }
-        });
-        t.join();
     }
 }
 
@@ -322,28 +331,87 @@ void SaveFuncBlock::createNextSaveFile()
 {
     dbName = dbBaseName + "_Ind" + QString::number( ++multiFileIndex ).toStdString() + ".db";
     std::cout << "=============createNextSaveFile " << dbName << std::endl;
-    dbManager->openDB(dbName);
+
+    ConnectionPool::get_instance().resetPool(dbName);
     for (size_t i = 0; i < saveContexts.size(); i++)
     {
-        if(!saveContexts[i].tableName.empty())
-            dbManager->createTable(saveContexts[i].tableName);
+        threadPool->enqueue([this](std::string tableName) ->void {
+            dbManager->createTable(tableName);
+        }, saveContexts[i].tableName);
     }
 
-    dbManager->getDataByID("AI_1", 2);
     saveClock.restart();
+}
+
+void SaveFuncBlock::createConfigrationDB()
+{
+}
+
+void SaveFuncBlock::processStopSaveData()
+{
+    saveClock.invalidate();
+
+    // test record data
+    recordDB = new RecordDao();
+    std::string recordName = dbBaseName + ".db";
+
+    bool fromPool = (recordName == dbName);
+    if(!fromPool)
+        recordDB->openRecordDB(recordName);
+    recordDB->createTable(fromPool);
+    recordDB->update_conf(oprationTtimeStr, fromPool);
+    if (recordDB){
+        delete recordDB;
+        recordDB = nullptr;
+    }
+
+    // configration
+    confDB = new ConfigrationDao();
+}
+
+void SaveFuncBlock::startSaving()
+{
+    startSave = true;
+    ConnectionPool::get_instance().initConnection(dbName, 8);
+    threadPool = new ThreadPool(8);
+    dbManager = new SaveSqlData();
+
+    saveClock.restart();
+    saveThread = std::thread{ &SaveFuncBlock::renderLoop, this };
+    std::cout << "=======startSaving";
+    qint64 timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    oprationTtimeStr = "start:" + QString::number(timestamp).toStdString();
+}
+
+void SaveFuncBlock::pauseSaving()
+{
+    startSave = false;
+    qint64 timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    std::string str = " pause:" + QString::number(timestamp).toStdString();
+    oprationTtimeStr += str;
+}
+
+void SaveFuncBlock::continueSaving()
+{
+    startSave = true;
+    qint64 timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    std::string str = " continue:" + QString::number(timestamp).toStdString();
+    oprationTtimeStr += str;
+}
+
+void SaveFuncBlock::stopSaving()
+{
+    startSave = false;
+    qint64 timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    std::string str = " stop:" + QString::number(timestamp).toStdString();
+    oprationTtimeStr += str;
+
+    processStopSaveData();
 }
 
 template <SampleType DST>
 void SaveFuncBlock::processSaveData(SignalContext &signalContext, const DataPacketPtr &dataPacket)
-{
-    // auto domainPacket = dataPacket.getDomainPacket();
-    // size_t count = domainPacket.getDataSize();
-    // auto data = dataPacket.getData();
-    // std::vector<char> charVector(count);
-    // std::memcpy(charVector.data(), data, count);
-    // dbManager->insertData(charVector);
-    // std::cout << "==============processSaveData: " << count << "====: " << charVector.size() << std::endl;
-}
+{}
 
 
 }

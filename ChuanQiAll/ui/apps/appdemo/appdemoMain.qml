@@ -35,19 +35,4 @@ Item {
             loadPage(path)
         }
     }
-
-    // Connections{
-    //     target: appset
-    //     function onFrequencyChanged(num){
-    //         if(graphicdisplay.item&&graphicdisplay.item.getGenerateCategoriesNum)
-    //         {
-    //             graphicdisplay.item.getGenerateCategoriesNum(num)
-    //         }
-    //     }
-    //     function onSwitchGraphics(path)
-    //     {
-    //         console.log(path)
-    //     }
-
-    // }
 }

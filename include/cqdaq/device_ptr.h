@@ -5,7 +5,7 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //
-//     RTGen (CppGenerator v5.0.0) on 20.07.2024 00:55:44.
+//     RTGen (CppGenerator v5.0.0) on 24.10.2024 06:57:03.
 // </auto-generated>
 //------------------------------------------------------------------------------
 #pragma once
@@ -25,6 +25,7 @@
 #include <coreobjects/property_object.h>
 #include <cqdaq/function_block_ptr.h>
 #include <cqdaq/function_block_type_ptr.h>
+#include <cqdaq/data_center_config_ptr.h>
 
 
 
@@ -534,6 +535,17 @@ public:
         daq::checkErrorInfo(errCode);
 
         return ticks;
+    }
+
+
+    
+    void setDataCenter(const daq::DataCenterConfigPtr& dcConfig) const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
+
+        auto errCode = this->object->setDataCenter(dcConfig);
+        daq::checkErrorInfo(errCode);
     }
 
 #if __has_include(<cqdaq/device_ptr.custom.h>)

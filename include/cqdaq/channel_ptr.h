@@ -5,7 +5,7 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //
-//     RTGen (CppGenerator v5.0.0) on 20.07.2024 00:55:36.
+//     RTGen (CppGenerator v5.0.0) on 24.10.2024 06:56:55.
 // </auto-generated>
 //------------------------------------------------------------------------------
 #pragma once
@@ -13,6 +13,8 @@
 #include "cqdaq/channel.h"
 #include "function_block_ptr.h"
 #include <cqdaq/function_block_ptr.h>
+#include <coretypes/list_ptr.h>
+#include <cqdaq/data_packet_ptr.h>
 
 
 
@@ -119,7 +121,77 @@ public:
     }
 
 
+    
+    void setChannelNodeType(daq::ChannelType kind) const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
 
+        auto errCode = this->object->setChannelNodeType(kind);
+        daq::checkErrorInfo(errCode);
+    }
+
+    
+    daq::ChannelType getChannelNodeType() const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
+
+        daq::ChannelType kind;
+        auto errCode = this->object->getChannelNodeType(&kind);
+        daq::checkErrorInfo(errCode);
+
+        return kind;
+    }
+
+    
+    void setSampleValueType(daq::SampleValueType svType) const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
+
+        auto errCode = this->object->setSampleValueType(svType);
+        daq::checkErrorInfo(errCode);
+    }
+
+    
+    daq::SampleValueType getSampleValueType() const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
+
+        daq::SampleValueType svType;
+        auto errCode = this->object->getSampleValueType(&svType);
+        daq::checkErrorInfo(errCode);
+
+        return svType;
+    }
+
+    
+    daq::ListPtr<daq::IDataPacket> getAllScaledDatas() const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
+
+        daq::ListPtr<daq::IDataPacket> packages;
+        auto errCode = this->object->getAllScaledDatas(&packages);
+        daq::checkErrorInfo(errCode);
+
+        return packages;
+    }
+
+    
+    daq::ListPtr<daq::IDataPacket> getAllReducedDatas() const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
+
+        daq::ListPtr<daq::IDataPacket> packages;
+        auto errCode = this->object->getAllReducedDatas(&packages);
+        daq::checkErrorInfo(errCode);
+
+        return packages;
+    }
 
 #if __has_include(<cqdaq/channel_ptr.custom.h>)
     #include <cqdaq/channel_ptr.custom.h>

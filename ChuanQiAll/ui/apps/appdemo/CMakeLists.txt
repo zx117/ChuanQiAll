@@ -33,8 +33,8 @@ elseif(UNIX)
     SET(CMAKE_INSTALL_RPATH "\${ORIGIN}")
 endif()
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Quick LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Quick LinguistTools)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Quick Widgets LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Quick Widgets LinguistTools)
 
 #cmake编译时包括自身所在目录
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -103,7 +103,9 @@ target_link_libraries(${LIBNAME} INTERFACE
 )
 target_link_libraries(${LIBNAME} PRIVATE
     ${LINK_DEPENDENCIES}
-    Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick)
+    Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick
+    Qt${QT_VERSION_MAJOR}::Widgets
+)
 
 target_include_directories(
     ${LIBNAME} PUBLIC

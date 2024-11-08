@@ -24,9 +24,9 @@ void LogOperations::recordLog(const QString& moduleName, int level, const QStrin
         if(logger!=nullptr)
         {
             // 设置日志格式为自定义格式，包含模块名
-            logger->set_formatter(std::make_unique<CustomFormat>(std::string(moduleName.toLocal8Bit())));
+            logger->set_formatter(std::make_unique<CustomFormat>(std::string(moduleName.toUtf8())));
             // 记录日志信息
-            logger->log(static_cast<spdlog::level::level_enum>(level), std::string(information.toLocal8Bit()));
+            logger->log(static_cast<spdlog::level::level_enum>(level), std::string(information.toUtf8()));
             logger->flush();
             emit logMessage("111");
         }
@@ -80,7 +80,7 @@ void LogOperations::createLogger(const QString& path, const QString& filename)
     spdlog::flush_every(std::chrono::seconds(1));
     // 使用当前日期生成日志文件名
     std::string current_date = fmt::format("{:%Y-%m-%d}", fmt::localtime(std::chrono::system_clock::now()));
-    std::string file_name = fmt::format("{}/{}.txt", std::string(path.toLocal8Bit()), std::string(filename.toLocal8Bit()), current_date);
+    std::string file_name = fmt::format("{}/{}.txt", std::string(path.toUtf8()), std::string(filename.toUtf8()), current_date);
 
     // 创建控制台 sink
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

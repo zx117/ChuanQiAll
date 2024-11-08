@@ -153,7 +153,9 @@ Item{
                         onLoaded: {
                              if (item&&item.upAppInterFace) {
                                 item.upAppInterFace(appNum)
+                                item.connect
                              }
+
                         }
 
                     }
@@ -165,5 +167,7 @@ Item{
         menuloader.source = "qrc:/qml/components/Layouts/side/FullView1Inside/" + qmlFile;
         titleName=txt
     }
+
+
 }
 

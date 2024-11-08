@@ -7,6 +7,7 @@
 #include <QLocale>
 #include <QTranslator>
 #include <QDir>
+#include <QDebug>
 
 #include "appfactory.h"
 #include "appsystem.h"
@@ -26,6 +27,15 @@
 #include <cqdaq/cqdaq.h>
 
 #include <sqlite3.h>
+#include <QQuickWidget>
+
+#include <cqdaq/worker.h>
+#include <cqdaq/ncc_ptr.h>
+#include <cqdaq/data_center_ptr.h>
+#include <cqdaq/instance_ptr.h>
+
+#include <save/icommunication.h>
+
 
 int main(int argc, char *argv[])
 {
@@ -83,10 +93,8 @@ int main(int argc, char *argv[])
     // 2. 加载功能组件（初始化）：日志、任务调度
     daq::InstancePtr instance = daq::Instance("");
 
-    // Find and connect to a device hosting an OPC UA TMS server
-    // 罗列出装载了多少个有效设备，也就是识别到的设备。
+    // Find and load all actived device
     const auto availableDevices = instance.getAvailableDevices();
-    daq::DevicePtr device;
     for (const auto& deviceInfo : availableDevices)
     {
         /*        for (const auto & capability : deviceInfo.getServerCapabilities())
@@ -98,15 +106,44 @@ int main(int argc, char *argv[])
             }
         }
 */
-        // 把有效设备进行控制，需要激活的加进来
-        // 需要加上界面控制激活逻辑，激活之后再加进来
-        // 目前加进去是自启动，以后改成start指令去启动采集
-        device = instance.addDevice(deviceInfo.getConnectionString());
-
-        const auto config = device.saveConfiguration();
-        std::cout << config;
+        instance.addDevice(deviceInfo.getConnectionString());
+        qDebug() << deviceInfo.getConnectionString().toStdString().c_str();
     }
 
+    // Init all loaded
+    daq::NccPtr ncc = instance.getNccManager();
+    daq::WorkerPtr ctrl = ncc.asPtr<daq::IWorker>();
+    ctrl.initialize();
+    ctrl.channelCreate();
+    ctrl.applyConfigChanged();
+
+    // load configuration
+    daq::StringPtr last_config("");
+    ctrl.stopAcquisition();
+    //instance.loadConfiguration(last_config);
+    ctrl.channelCreate();
+    ctrl.applyConfigChanged();
+    ctrl.loadFinish();
+
+    //acqusition
+    last_config = instance.saveConfiguration();
+    ctrl.initializeAcquisition();
+    ctrl.startAcquisition();
+
+    //stop
+    //ctrl.stopAcquisition();
+    //ctrl.finalizeAcquisition();
+
+    // topology and channel
+    daq::DataCenterPtr dc;
+    dc = instance.getDataCenter();
+
+    daq::FolderPtr topo = dc.getChannelTopology();
+    daq::ListPtr<daq::IChannel> channels = dc.getAllChannels();
+
+    //device info
+    daq::DevicePtr device;
+    device = instance.getRootDevice();
     // Exit if no device is found
     if (!device.assigned())
     {
@@ -120,12 +157,37 @@ int main(int argc, char *argv[])
     // Output 10 samples using reader
     using namespace std::chrono_literals;
 
-    // Get the first channel and its signal
-    // device.getChannels()返回通道列表。
-    // 再决定取哪个通道的数值
-    daq::ListPtr<daq::IChannel> channelList = device.getChannels();
-    daq::ChannelPtr channel = device.getChannels()[0];
+    // Get the first channel and property
+    daq::ChannelPtr channel = device.getChannels()[1];
+    daq::PropertyPtr nameProp = channel.getProperty("Name");
+    daq::PropertyPtr samplerateProp = channel.getProperty("SampleRate");
+    daq::PropertyPtr usedProp = channel.getProperty("Used");
+    daq::PropertyPtr rangeProp = channel.getProperty("Range");
+    daq::PropertyPtr unitProp = channel.getProperty("Unit");
+    daq::PropertyPtr colorProp = channel.getProperty("Color");
+    daq::PropertyPtr factorProp = channel.getProperty("Factor");
+    daq::PropertyPtr offsetProp = channel.getProperty("Offset");
+
+    // Get property value
+    double sv = channel.getPropertyValue("SampleRate");
+    daq::StringPtr name = channel.getPropertyValue("Name");
+    daq::Float factor = channel.getPropertyValue("Factor");
+
+    // Set property value
+    channel.setPropertyValue("Name","NewName");
+    name = channel.getPropertyValue("Name");
+
+    channel.setPropertyValue("Used", false);
+    channel.setPropertyValue("SampleRate", 1500.0);
+    sv = channel.getPropertyValue("SampleRate");
+
+    channel.setPropertyValue("Unit", "V");
+    daq::StringPtr unit = channel.getPropertyValue("Unit");
+
+    channel.setPropertyValue("Factor", 10.0);
+
     // 取出通道之后，对应哪个通道的数据：信号表示
+    daq::ListPtr<daq::IChannel> channelList = device.getChannels();
     daq::SignalPtr signal = channel.getSignals()[0]; // 信号
 
     // 使用StreamReader读数据，两组数据《时戳、测量值》
@@ -141,56 +203,62 @@ int main(int argc, char *argv[])
     std::cout << "Reading signal: " << signal.getName() << std::endl;
     std::cout << "Origin: " << origin << std::endl;
 
-    // Allocate buffer for reading double samples
-    double samples[100];
-    uint64_t domainSamples[100];
-     int cnt = 0;
+    // // Allocate buffer for reading double samples
+    // double samples[100];
+    // uint64_t domainSamples[100];
+    //  int cnt = 0;
     // while (cnt < 40)
-    {
-        std::this_thread::sleep_for(100ms);
+    // {
+    //     std::this_thread::sleep_for(100ms);
 
-        // Read up to 100 samples every 25ms, storing the amount read into `count`
-        daq::SizeT count = 100;
-        reader.readWithDomain(samples, domainSamples, &count);
-        if (count > 0)
-        {
-            std::cout << "count: " << count << std::endl;
-            // for(int i=0; i<count; ++i)
-            // {
-            //     // daq::Float domainValue = (daq::Int) domainSamples[count - 1] * resolution;
-            //     daq::Float domainValue = (daq::Int) domainSamples[i] * resolution;
-            //     std::cout << "Value1: " << samples[count - 1] << ", Domain: " << domainValue << unitSymbol << std::endl;
-            // }
-            std::cout << "Value2: " << samples[count - 1] << ", Domain: " << domainSamples[count - 1]  << (daq::Int) domainSamples[count - 1] * resolution<< std::endl;
-            cnt++;
-        }
-    }
+    //     // Read up to 100 samples every 25ms, storing the amount read into `count`
+    //     daq::SizeT count = 100;
+    //     reader.readWithDomain(samples, domainSamples, &count);
+    //     if (count > 0)
+    //     {
+    //         std::cout << "count: " << count << std::endl;
+    //         // for(int i=0; i<count; ++i)
+    //         // {
+    //         //     // daq::Float domainValue = (daq::Int) domainSamples[count - 1] * resolution;
+    //         //     daq::Float domainValue = (daq::Int) domainSamples[i] * resolution;
+    //         //     std::cout << "Value1: " << samples[count - 1] << ", Domain: " << domainValue << unitSymbol << std::endl;
+    //         // }
+    //         std::cout << "Value2: " << samples[count - 1] << ", Domain: " << domainSamples[count - 1]  << (daq::Int) domainSamples[count - 1] * resolution<< std::endl;
+    //         cnt++;
+    //     }
+    // }
 
-    using namespace date;
+    // using namespace date;
 
-    // From here on the reader returns system-clock time-points as a domain
-    auto timeReader = daq::TimeReader(reader);
+    // // From here on the reader returns system-clock time-points as a domain
+    // auto timeReader = daq::TimeReader(reader);
 
-    // Allocate buffer for reading time-stamps
-    std::chrono::system_clock::time_point timeStamps[100];
-    cnt = 0;
-    // while (cnt < 40)
-    {
-        std::this_thread::sleep_for(100ms);
+    // // Allocate buffer for reading time-stamps
+    // std::chrono::system_clock::time_point timeStamps[100];
+    // cnt = 0;
+    // // while (cnt < 40)
+    // {
+    //     std::this_thread::sleep_for(100ms);
 
-        // Read up to 100 samples every 25ms, storing the amount read into `count`
-        daq::SizeT count = 100;
-        reader.readWithDomain(samples, timeStamps, &count);
-        if (count > 0)
-        {
-            std::cout << "Value2: " << samples[count - 1] << ", Domain: " << timeStamps[count - 1] << std::endl;
-            cnt++;
-        }
-    }
+    //     // Read up to 100 samples every 25ms, storing the amount read into `count`
+    //     daq::SizeT count = 100;
+    //     reader.readWithDomain(samples, timeStamps, &count);
+    //     if (count > 0)
+    //     {
+    //         std::cout << "Value2: " << samples[count - 1] << ", Domain: " << timeStamps[count - 1] << std::endl;
+    //         cnt++;
+    //     }
+    // }
 
     // 加工模块 得到所有有效功能模块类型。功能模块 类似上面获取设备
     auto bts = instance.getAvailableFunctionBlockTypes();
-    qDebug() << "===================1111";
+    auto test = instance.getFunctionBlocks();
+    qDebug() << "===================1111" << test.getCount() << bts.getCount();
+    auto ks = bts.getKeys();
+    for(auto i : ks){
+        qDebug() << "===================222" << QString::fromStdString(i.toStdString());
+    }
+
     daq::FunctionBlockPtr fft = instance.addFunctionBlock("ref_fb_module_fft"); // 计算的功能模块
     fft.getInputPorts()[0].connect(signal); // 连接信号
 
@@ -198,28 +266,39 @@ int main(int argc, char *argv[])
     // 获取数据，是否和保存一起
 
     daq::FunctionBlockPtr save = instance.addFunctionBlock("ref_fb_module_saver"); // 保存的功能模块
+    daq::ICommunication* com = save.as<daq::ICommunication>(true);
+    com->startSaving();
+
     int sigIndex = 0;
+    qDebug() << "========== channel count : " << channelList.getCount();
     for (const auto& channel : channelList) {
         daq::ListPtr<daq::ISignal> signas = channel.getSignals(); // 信号
         for (const auto& sig : signas) {
+            qDebug() << "========== signals\n" << sig.getName().toStdString().c_str();
             save.getInputPorts()[sigIndex].connect(sig);
             sigIndex ++;
         }
     }
 
-    // Create an instance of the renderer function block
-    daq::FunctionBlockPtr renderer = instance.addFunctionBlock("ref_fb_module_renderer"); // 显示的模块
-    // Connect the first output signal of the device to the renderer
-    renderer.getInputPorts()[0].connect(signal);
-    renderer.getInputPorts()[1].connect(fft.getSignals()[0]);
+    com->pauseSaving();
+    com->continueSaving();
+    // com->pauseSaving();
 
-    // Create an instance of the statistics function block
-    daq::FunctionBlockPtr statistics = instance.addFunctionBlock("ref_fb_module_statistics"); // 统计的功能模块
+    // com->stopSaving();
 
-    // Connect the first output signal of the device to the statistics
-    statistics.getInputPorts()[0].connect(signal);
-    // Connect the first output signal of the statistics to the renderer
-    renderer.getInputPorts()[2].connect(statistics.getSignals()[0]);
+    // // Create an instance of the renderer function block
+    // daq::FunctionBlockPtr renderer = instance.addFunctionBlock("ref_fb_module_renderer"); // 显示的模块
+    // // Connect the first output signal of the device to the renderer
+    // renderer.getInputPorts()[0].connect(signal);
+    // renderer.getInputPorts()[1].connect(fft.getSignals()[0]);
+
+    // // Create an instance of the statistics function block
+    // daq::FunctionBlockPtr statistics = instance.addFunctionBlock("ref_fb_module_statistics"); // 统计的功能模块
+
+    // // Connect the first output signal of the device to the statistics
+    // statistics.getInputPorts()[0].connect(signal);
+    // // Connect the first output signal of the statistics to the renderer
+    // renderer.getInputPorts()[2].connect(statistics.getSignals()[0]);
 
     // List the names of all properties
     for (daq::PropertyPtr prop : channel.getVisibleProperties())
@@ -250,6 +329,10 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
 
     engine.load(url);
+
+    // QQuickWidget *quickWidget = new QQuickWidget(engine, );
+    // quickWidget->setSource(QUrl("qrc:/qml/main.qml"));
+    // quickWidget->show();
 
     int ret = app.exec();
 

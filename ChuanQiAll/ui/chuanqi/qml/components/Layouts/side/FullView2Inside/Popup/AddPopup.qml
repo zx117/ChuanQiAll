@@ -1,7 +1,6 @@
 ﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.1
-import MyTreeModel 1.0
 import Widgets 1.0
 import Themes 1.0
 Popup{
@@ -87,6 +86,7 @@ Popup{
                 Row{
                     anchors.fill: parent
                     Flickable {
+                        id:flickable
                         width: parent.width/4
                         height: parent.height
                         contentHeight: 1200
@@ -658,6 +658,7 @@ Popup{
                                 }
                             }
                         }
+                        ScrollBar.vertical: ScrollBar{}
                     }
                     Item{
                         width: parent.width*3/4
@@ -709,21 +710,7 @@ Popup{
                         MouseArea{
                             anchors.fill: parent
                             onClicked: {
-                                if (basicmathe.currentItem) {
-                                    console.log("Current Item Text:", basicmathe.currentItem.model.txt)
-                                    console.log("Current Item QML File:", basicmathe.currentItem.model.qmlFile)
-                                    console.log("Current Item Active Status:", basicmathe.currentItem.model.isActive)
-                                }
-                                if (advancedcomputing.currentItem) {
-                                    console.log("Current Item Text:", advancedcomputing.currentItem.model.txt)
-                                    console.log("Current Item QML File:", advancedcomputing.currentItem.model.qmlFile)
-                                    console.log("Current Item Active Status:", advancedcomputing.currentItem.model.isActive)
-                                }
-                                if (datasources.currentItem) {
-                                    console.log("Current Item Text:", datasources.currentItem.model.txt)
-                                    console.log("Current Item QML File:", datasources.currentItem.model.qmlFile)
-                                    console.log("Current Item Active Status:", datasources.currentItem.model.isActive)
-                                }
+
 
                             }
                         }

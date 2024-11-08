@@ -9,6 +9,23 @@ Rectangle{
     color: sideBarInterface.backgroundColor
     border.color: sideBarInterface.borderColor
     anchors.fill: parent
+    Component.onCompleted: {
+        for(var i=0;i<getdevinf.getRootDeviceNumber();i++)
+        {
+            rootdevice.append({"Devicename": getdevinf.getRootDeviceName(i), "Name": getdevinf.getRootDeviceTypeName(i),
+                                  "IdNumber": getdevinf.getRootDeviceTypeId(i), "Description": getdevinf.getRootDeviceDescription(i),
+                                  "Active": getdevinf.getDeviceActive(i),"Clicked":false,"originalIndex":i})
+        }
+    }
+
+    ListModel{
+        id:rootdevice
+    }
+
+    ListModel{
+        id:activedevice
+    }
+
     Item {
         id:setif
         width: parent.width-20
@@ -16,53 +33,36 @@ Rectangle{
         anchors.centerIn: parent
         Column{
             spacing: 10
-            Layout.fillHeight: true
-            Layout.fillWidth: true
+            width: parent.width
+            height: parent.height
             BaseTextSmall{
                 text: "OXYGEN-NET系统"
                 font.bold: true
             }
-            Rectangle{
-                width: 200
-                height: 250
-                color: "#efefef"
-                Column{
-                    anchors.fill: parent
-                    BaseTextModerate{
-                        text: "DESKTOP-IUDABC2"
-                        font.bold: true
-                    }
-                    BaseTextSmall{
-                        text: "OXYGEN-NET"
-                    }
-                    BaseTextSmall{
-                        text: "v6.51"
-                    }
-                    BaseTextSmall{
-                        text: "ADMA Ensolure"
-                        font.bold: true
-                    }
-                    Row{
-                        BaseTextSmall{
-                            text: "IP:"
-                        }
-                        BaseTextSmall{
-                            text: "127.0.0.1"
-                        }
-                    }
-                    Row{
-                        BaseTextSmall{
-                            text: "Status:"
-                        }
-                        BaseTextSmall{
-                            text: "Not claimable"
-                        }
-                    }
-                    BaseTextSmall{
-                        text: "Local Node"
+
+            Flickable {
+                width: parent.width
+                height: 300
+                contentWidth: parent.width
+                contentHeight: height
+                flickableDirection: Flickable.HorizontalFlick
+                clip: true
+                ListView {
+                    width: parent.width
+                    height: parent.height
+                    model: activedevice
+                    spacing: 10
+                    orientation: ListView.Horizontal
+                    delegate: NodeItem {
+                        devicename:model.Devicename
+                        name:model.Name
+                        idnumber:model.IdNumber
+                        description:model.Description
+                        active:model.Active
                     }
                 }
             }
+
             BaseTextSmall{
                 text: "可用节点"
                 font.bold: true
@@ -90,20 +90,32 @@ Rectangle{
                 buttonRadius: 3
                 buttonText: "锁定所选设备"
                 onClicked: {
-                    // 生成唯一的文本内容
-                    var component = Qt.createComponent("NodeItem.qml");
-                    if (component.status === Component.Ready) {
-                        var nodeItem = component.createObject(container);
-                        nodeItem.x = container.children.length * (nodeItem.width + 10); // 横向排列
-                    } else {
-                        console.log("Error loading component:", component.errorString());
-                    }
+
                 }
             }
-            Row {
-                id: container
+
+            Flickable {
+                id: flickable
                 width: parent.width
-                spacing: 10
+                height: 300
+                contentWidth: parent.width
+                contentHeight: height
+                flickableDirection: Flickable.HorizontalFlick
+                clip: true
+                ListView {
+                    width: parent.width
+                    height: parent.height
+                    model: rootdevice
+                    spacing: 10
+                    orientation: ListView.Horizontal
+                    delegate: NodeItem {
+                        devicename:model.Devicename
+                        name:model.Name
+                        idnumber:model.IdNumber
+                        description:model.Description
+                        active:model.Active
+                    }
+                }
             }
         }
     }

@@ -1,7 +1,6 @@
 ﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.1
-import MyTreeModel 1.0
 import Widgets 1.0
 import Themes 1.0
 Item {

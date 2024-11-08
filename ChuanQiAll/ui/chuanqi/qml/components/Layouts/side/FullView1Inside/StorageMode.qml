@@ -4,9 +4,6 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import Widgets 1.0
 import Themes 1.0
-import MyTreeModel 1.0
-import MyListModel 1.0
-import MyTableModel 1.0
 
 Rectangle{
     property RectangelStyle sideBarInterface: SkinManager.currentSkin.sideBarInterface

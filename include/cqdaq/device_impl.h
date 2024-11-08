@@ -21,6 +21,7 @@
 #include <coreobjects/property_object_factory.h>
 #include <cqdaq/module_manager_ptr.h>
 #include <cqdaq/module_manager_utils_ptr.h>
+#include <cqdaq/data_center_config_ptr.h>
 #include <set>
 
 BEGIN_NAMESPACE_CQDAQ
@@ -90,6 +91,8 @@ public:
 
     ErrCode INTERFACE_FUNC getTicksSinceOrigin(uint64_t* ticks) override;
 
+    ErrCode INTERFACE_FUNC setDataCenter(IDataCenterConfig* dcConfig) override;
+
     // ISerializable
     ErrCode INTERFACE_FUNC getSerializeId(ConstCharPtr* id) const override;
     
@@ -102,6 +105,7 @@ protected:
     IoFolderConfigPtr ioFolder;
     LoggerComponentPtr loggerComponent;
     bool isRootDevice;
+    DataCenterConfigPtr   dataCenter;
 
     template <class ChannelImpl, class... Params>
     ChannelPtr createAndAddChannel(const FolderConfigPtr& parentFolder, const StringPtr& localId, Params&&... params);
@@ -369,6 +373,16 @@ template <typename TInterface, typename... Interfaces>
 uint64_t GenericDevice<TInterface, Interfaces...>::onGetTicksSinceOrigin()
 {
     return 0;
+}
+
+template <typename TInterface, typename... Interfaces>
+ErrCode INTERFACE_FUNC GenericDevice<TInterface, Interfaces...>::setDataCenter(IDataCenterConfig* dcConfig)
+{
+    CQDAQ_PARAM_NOT_NULL(dcConfig);
+
+    this->dataCenter = dcConfig;
+
+    return CQDAQ_SUCCESS;
 }
 
 template <typename TInterface, typename... Interfaces>

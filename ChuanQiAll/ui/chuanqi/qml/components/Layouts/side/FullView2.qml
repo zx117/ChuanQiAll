@@ -1,9 +1,9 @@
 ﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.1
-import MyTreeModel 1.0
 import Widgets 1.0
 import Themes 1.0
+import MyListModel 1.0
 import "../side/FullView2Inside/Popup"
 Rectangle{
     id:full2
@@ -31,14 +31,23 @@ Rectangle{
     property real leftwidth: 0.0
     property real rightwidth: 0.0
     property int  currentIndex: -1
+    property int  i:0;
+    signal waveformDisplay(int index)
     color: sideBarInterface.backgroundColor
     border.color: sideBarInterface.borderColor
 
+    Connections {
+        target: getdevinf
+        function onDeviceDataListChanged(threadid){
+            getdevinf.upDateDeviceData(threadid);
+        }
+    }
     Column{
         anchors.fill: parent
         Row{
             height: parent.height/4
             width: parent.width
+            spacing: 10
             Rectangle{
                 width: 150
                 height: parent.height
@@ -48,6 +57,8 @@ Rectangle{
                     anchors.fill: parent
                     clip: true
                     contentHeight: parent.height
+                    ScrollBar.vertical: ScrollBar{}
+
                     Column{
                         anchors.fill: parent
                         ListModel{
@@ -81,24 +92,75 @@ Rectangle{
                     anchors.fill: parent
                     clip: true
                     contentHeight: parent.height
+                    ScrollBar.vertical: ScrollBar{}
+                    Component.onCompleted: {
+                        for(var i=0;i<getdevinf.getActivateDeviceNumber();i++)
+                        {
+                            machine.append({"text": getdevinf.getActivateDeviceName(i),"active":getdevinf.getDeviceActive(i),"isClicked":false})
+
+                        }
+                        for(var i=0;i<getdevinf.getActiveDeviceChannelsNum(0);i++)
+                        {
+                            boardcard1.append({"text": getdevinf.getActiveDeviceChannelsName(0,i),"activeDevice":getdevinf.getActivateDeviceName(0),"isClicked":false})
+                            boardcard2.append({"text": getdevinf.getActiveDeviceChannelsName(0,i),"activeDevice":getdevinf.getActivateDeviceName(0),"isClicked":false})
+                        }
+                    }
+
                     Column{
                         anchors.fill: parent
                         ListModel{
                             id:machine
-                            ListElement{text:"ADMA"}
                         }
                         ListView{
                             width: parent.width
                             height: parent.height
                             model:machine
                             delegate: Rectangle{
-                                height: 50
+                                height: model.active===true?50:0
                                 width: parent.width
-                                color: "#efefef"
+                                color: model.isClicked?"#b7c9db":"#efefef"
                                 border.color: "#cfcfcf"
+                                visible: model.active
                                 BaseTextSmall{
+                                    wrapMode: Text.WordWrap
+                                    width: parent.width
                                     text: model.text
+                                    font.pointSize: 7
                                     anchors.centerIn: parent
+                                }
+                                MouseArea{
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        for (var i = 0; i < machine.count; i++) {
+                                            machine.setProperty(i, "isClicked", false);
+                                        }
+                                        machine.setProperty(index, "isClicked", true);
+                                        boardcard1.clear()
+                                        boardcard2.clear()
+
+                                        for(var i=0;i<getdevinf.getActiveDeviceChannelsNum(index);i++)
+                                        {
+                                            boardcard1.append({"text": getdevinf.getActiveDeviceChannelsName(index,i),"activeDevice":getdevinf.getActivateDeviceName(index),"isClicked":false})
+                                            boardcard2.append({"text": getdevinf.getActiveDeviceChannelsName(index,i),"activeDevice":getdevinf.getActivateDeviceName(index),"isClicked":false})
+                                        }
+                                        for(var i=0;i<MyListModel.count;i++)
+                                        {
+                                            for(var j=0;j<boardcard1.count;j++)
+                                            {
+                                                if(MyListModel.get(i).activeDevice===boardcard1.get(j).activeDevice&&MyListModel.get(i).text===boardcard1.get(j).text)
+                                                {
+                                                    boardcard1.get(j).isClicked=MyListModel.get(i).isClicked
+                                                }
+                                            }
+                                            for(var j=0;j<boardcard2.count;j++)
+                                            {
+                                                if(MyListModel.get(i).activeDevice===boardcard2.get(j).activeDevice&&MyListModel.get(i).text===boardcard2.get(j).text)
+                                                {
+                                                    boardcard2.get(j).isClicked=MyListModel.get(i).isClicked
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -106,105 +168,251 @@ Rectangle{
                 }
             }
             Rectangle{
-                width: parent.width-300
+                width: parent.width/2
                 height: parent.height
                 border.color: "#cfcfcf"
-                color: "#ffffff"
-                Flickable{
-                    anchors.fill: parent
-                    clip: true
-                    contentHeight: parent.height
-                    Column{
-                        anchors.fill: parent
-                        ListModel{
-                            id:machinemodel
-                            ListElement{text:"text1";size:5}
-                            ListElement{text:"text1";size:5}
-                            ListElement{text:"text1";size:5}
-                            ListElement{text:"text1";size:5}
-                            ListElement{text:"text1";size:5}
-                            ListElement{text:"text1";size:5}
+                color: "#cfcfcf"
+                Column{
+                    width: parent.width
+                    height: parent.height
+                    Row{
+                        width: parent.width/2
+                        height: parent.height/2
+                        spacing: 5
+
+                        Column{
+                            id:num
+                            height: parent.height
+                            width: 50
+                            visible: false
+                            Rectangle{
+                                height: parent.height/2
+                                width: parent.height/2
+                                border.color: "#cfcfcf"
+                                color: "#ffffff"
+                                BaseTextModerate{
+                                    anchors.centerIn: parent
+                                    text: "1"
+                                }
+                            }
+                            Rectangle{
+                                height: parent.height/2
+                                width: parent.height/2
+                                border.color: "#cfcfcf"
+                                color: "#ffffff"
+                                BaseTextModerate{
+                                    anchors.centerIn: parent
+                                    text: "2"
+                                }
+                            }
                         }
-                        ListView{
-                            id:listview
+                        Rectangle{
+                            id:boardcardrect
+                            visible: false
                             width: parent.width
                             height: parent.height
-                            orientation: Qt.Horizontal
-                            model:machinemodel
-                            delegate: Rectangle{
-                                id:rect
+                            border.color: "#cfcfcf"
+                            ListModel{
+                                id:boardcard1
+                            }
+                            ListView{
+                                width: parent.width
                                 height: parent.height
-                                width: 40
-                                color: "#ffffff"
-                                border.color: "#cfcfcf"
-                                Column{
-                                    anchors.fill: parent
-                                    Rectangle{
-                                        width: parent.width
-                                        height: 30
-                                        color: "#efefef"
-                                        border.color: "#cfcfcf"
-                                        BaseTextSmall{
-                                            text: index
-                                            anchors.centerIn: parent
-                                        }
-                                    }
+                                model: boardcard1
+                                orientation: ListView.Horizontal
+                                delegate: Rectangle{
+                                    width: 50
+                                    height: boardcardrect2.height
+                                    border.color: isClicked==false?"#cfcfcf":"#6794c2"
+                                    color: isClicked==false?"#efefef":"#b7c9db"
                                     Column{
-                                        id:column
-                                        width: parent.width
-                                        height: parent.height-60
-                                        Repeater{
-                                            model: size
-                                            delegate: Item{
-                                                height: column.height/size
-                                                width:  column.width
+                                        anchors.fill:parent
+                                        Item {
+                                            width: parent.width
+                                            height:parent.height/2
+                                            Rectangle{
+                                                anchors.centerIn: parent
+                                                width: 40
+                                                height: 40
+                                                radius: 20
+                                                border.color: "#585858"
+                                                border.width: 5
+                                                color: "#000000"
                                                 Rectangle{
-                                                    height: 20
-                                                    width: 20
                                                     anchors.centerIn: parent
-                                                    radius: 10
-                                                    color: "#efefef"
+                                                    width: 20
+                                                    height: 20
+                                                    radius: 20
                                                     border.color: "#585858"
-                                                    Rectangle{
-                                                        width: parent.width/2
-                                                        height: parent.height/2
-                                                        anchors.centerIn: parent
-                                                        radius: 10
-                                                        color: "#cfcfcf"
-                                                        border.color: "#585858"
-                                                    }
+                                                    border.width: 5
+                                                    color: "#000000"
+                                                }
+                                            }
+                                        }
+                                        Item {
+                                            width: parent.width
+                                            height:parent.height/2
+                                            Rectangle{
+                                                anchors.centerIn: parent
+                                                width: 40
+                                                height: 40
+                                                radius: 20
+                                                border.color: "#ff4f34"
+                                                border.width: 5
+                                                color: "#80281a"
+                                                Rectangle{
+                                                    anchors.centerIn: parent
+                                                    width: 20
+                                                    height: 20
+                                                    radius: 20
+                                                    border.color: "#ff4f34"
+                                                    border.width: 5
+                                                    color: "#80281a"
                                                 }
                                             }
                                         }
                                     }
-                                    Rectangle{
-                                        width: parent.width
-                                        height: 30
-                                        color: "#005bb6"
-                                        border.color: "#cfcfcf"
-                                        Rectangle{
-                                            width: parent.width
-                                            height: parent.height/2
-                                            anchors.centerIn: parent
-                                            border.color: "#cfcfcf"
-                                            BaseTextSmall{
-                                                text: model.text
-                                                font.pointSize: 7
-                                                anchors.centerIn: parent
+                                    MouseArea{
+                                        anchors.fill: parent
+                                        onClicked: {
+                                            for(var i=0;i<MyListModel.count;i++)
+                                            {
+                                                if(MyListModel.get(i).activeDevice===model.activeDevice&&MyListModel.get(i).text===model.text)
+                                                {
+                                                    isClicked=!isClicked
+                                                    MyListModel.get(i).isClicked=!MyListModel.get(i).isClicked
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
+
+                        }
+
+                    }
+
+                    Row{
+                        width: parent.width/2
+                        height: parent.height/2
+                        spacing: 5
+
+                        Column{
+                            height: parent.height
+                            width: 50
+                            Rectangle{
+                                height: parent.height/2
+                                width: parent.height/2
+                                border.color: "#cfcfcf"
+                                color: "#ffffff"
+                                BaseTextModerate{
+                                    anchors.centerIn: parent
+                                    text: "1"
+                                }
+                            }
+                            Rectangle{
+                                height: parent.height/2
+                                width: parent.height/2
+                                border.color: "#cfcfcf"
+                                color: "#ffffff"
+                                BaseTextModerate{
+                                    anchors.centerIn: parent
+                                    text: "2"
+                                }
+                            }
+                        }
+                        Rectangle{
+                            id:boardcardrect2
+                            width: parent.width
+                            height: parent.height
+                            border.color: "#cfcfcf"
+                            ListModel{
+                                id:boardcard2
+                            }
+                            ListView{
+                                width: parent.width
+                                height: parent.height
+                                model: boardcard2
+                                orientation: ListView.Horizontal
+                                delegate: Rectangle{
+                                    width: 50
+                                    height: boardcardrect2.height
+                                    border.color: isClicked==false?"#cfcfcf":"#6794c2"
+                                    color: isClicked==false?"#efefef":"#b7c9db"
+                                    Column{
+                                        anchors.fill:parent
+                                        Item {
+                                            width: parent.width
+                                            height:parent.height/2
+                                            Rectangle{
+                                                anchors.centerIn: parent
+                                                width: 40
+                                                height: 40
+                                                radius: 20
+                                                border.color: "#585858"
+                                                border.width: 5
+                                                color: "#000000"
+                                                Rectangle{
+                                                    anchors.centerIn: parent
+                                                    width: 20
+                                                    height: 20
+                                                    radius: 20
+                                                    border.color: "#585858"
+                                                    border.width: 5
+                                                    color: "#000000"
+                                                }
+                                            }
+                                        }
+                                        Item {
+                                            width: parent.width
+                                            height:parent.height/2
+                                            Rectangle{
+                                                anchors.centerIn: parent
+                                                width: 40
+                                                height: 40
+                                                radius: 20
+                                                border.color: "#ff4f34"
+                                                border.width: 5
+                                                color: "#80281a"
+                                                Rectangle{
+                                                    anchors.centerIn: parent
+                                                    width: 20
+                                                    height: 20
+                                                    radius: 20
+                                                    border.color: "#ff4f34"
+                                                    border.width: 5
+                                                    color: "#80281a"
+                                                }
+                                            }
+                                        }
+                                    }
+                                    MouseArea{
+                                        anchors.fill: parent
+                                        onClicked: {
+                                            for(var i=0;i<MyListModel.count;i++)
+                                            {
+                                                if(MyListModel.get(i).activeDevice===model.activeDevice&&MyListModel.get(i).text===model.text)
+                                                {
+                                                    isClicked=!isClicked
+                                                    MyListModel.get(i).isClicked=!MyListModel.get(i).isClicked
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
                         }
                     }
                 }
             }
         }
-        Item {
+        Rectangle {
             id:titlritem
             width: parent.width
             height: 60
+            color: "#cfcfcf"
+            border.color: "#585858"
             Row{
                 anchors.fill: parent
                 spacing: 0
@@ -697,374 +905,245 @@ Rectangle{
             id:listitem
             width: parent.width
             height: parent.height-parent.height/4-titlritem.height-41
-            ListModel {
-                id: leafNodeModel
-            }
 
-            Component.onCompleted: {
-                for (var i = 0; i < treeModel.count; i++) {
-                    var node = treeModel.get(i)
-                    var hasChildren = false
-                    for (var j = 0; j < treeModel.count; j++) {
-                        if (treeModel.get(j).parent === node.name) {
-                            hasChildren = true
-                            break
-                        }
-                    }
-                    if (!hasChildren && node.parent !== "") {
-                        leafNodeModel.append(node)
-                    }
-                }
-            }
-            ListModel {
-                id: treeModel
-                ListElement { name: "1"; text:"LocalNode";parent:"";checked:false }
-                ListElement { name: "2"; text:"ADMA Enclosure";parent:"1";checked:false}
-                ListElement { name: "3"; text:"ADMA Stream1";parent:"2";checked:false }
-                ListElement { name: "4"; text:"Static-Header";parent:"3";checked:false }
-                ListElement { name: "5"; text:"Alias";color:"red";mileage:"0~15";coefficient:"1";bias:"0";parent:"4";checked:false }
-                ListElement { name: "6"; text:"Status";parent:"3";checked:false }
-                ListElement { name: "7"; text:"Status_GPS_Moder";color:"blue";mileage:"0~1";coefficient:"1";bias:"0";parent:"6";checked:false }
-                ListElement { name: "8"; text:"Status_Standstill";color:"green";mileage:"0~1";coefficient:"1";bias:"0";parent:"6";checked:false }
-                ListElement { name: "9"; text:"Status_Standstill2";color:"yellow";mileage:"0~1";coefficient:"1";bias:"0";parent:"6";checked:false }
-            }
-            // ScrollView {
-            //     anchors.fill: parent
-            //     Column {
-            //         id: treeRoot
-            //         spacing: 10
-
-            //         Component.onCompleted: {
-            //             createTree("", 0, treeRoot);
-            //         }
-
-            //         function createTree(parentName, indentLevel, parentItem) {
-            //             var children = [];
-            //             for (var i = 0; i < treeModel.count; i++) {
-            //                 var node = treeModel.get(i);
-            //                 if (node.parent === parentName) {
-            //                     children.push(node);
-            //                 }
-            //             }
-
-            //             children.sort(function(a, b) {
-            //                 return a.text.localeCompare(b.text);
-            //             });
-
-            //             var totalHeight = 30; // 初始高度，包含ID行的高度
-
-            //             for (var j = 0; j < children.length; j++) {
-            //                 var child = children[j];
-            //                 var newItem;
-
-            //                 if (hasChildren(child.name)) {
-            //                     newItem = treeNodeComponent.createObject(parentItem, {
-            //                         nodeText: child.text,
-            //                         indentLevel: indentLevel,
-            //                         x: indentLevel === 0 ? 0 : 30,
-            //                         y: totalHeight,
-            //                     });
-            //                     // 递归计算子节点的高度
-            //                     var childHeight = createTree(child.name, indentLevel + 1, newItem);
-            //                     totalHeight += childHeight; // 更新父节点的高度
-            //                     console.log()
-            //                 } else {
-            //                     newItem = listItemComponent.createObject(parentItem, {
-            //                         nodeText: child.text,
-            //                         indentLevel: indentLevel,
-            //                         x: 30,
-            //                         y: totalHeight,
-            //                         height:30
-            //                     });
-            //                     totalHeight += newItem.height; // 累加叶子节点的高度
-            //                 }
-            //             }
-
-            //             return totalHeight;
-            //         }
-
-            //         // 判断节点是否有子节点
-            //         function hasChildren(nodeName) {
-            //             for (var i = 0; i < treeModel.count; i++) {
-            //                 if (treeModel.get(i).parent === nodeName) {
-            //                     return true;
-            //                 }
-            //             }
-            //             return false;
-            //         }
-            //     }
-            // }
-
-            // Component {
-            //     id: treeNodeComponent
-            //     Rectangle {
-            //         id: rect
-            //         width: 500 // 初始宽度
-            //         height: 30 // 初始高度
-            //         color: "lightblue"
-            //         border.color: "black"
-            //         border.width: 1
-            //         property string nodeText: ""
-            //         property bool isExpand: true
-            //         property real rectheight: 0.0
-
-            //         Item {
-            //             width: parent.width
-            //             height: 30
-            //             Row {
-            //                 anchors.fill: parent
-            //                 Item {
-            //                     width: 30
-            //                     height: 30
-            //                     Image { // 节点展开/折叠图标
-            //                         anchors.centerIn: parent
-            //                         source: isExpand ? "qrc:/qml/images/treeIcon/treedown.png" : "qrc:/qml/images/treeIcon/treeright.png"
-            //                         width: 20
-            //                         height: 20
-            //                         MouseArea {
-            //                             anchors.fill: parent
-            //                             onClicked: {
-            //                                 isExpand = !isExpand
-            //                                 if (isExpand) {
-            //                                     rect.height = rectheight
-            //                                 } else {
-            //                                     rectheight = rect.height
-            //                                     rect.height = 30
-            //                                 }
-            //                             }
-            //                         }
-            //                     }
-            //                 }
-            //                 BaseTextSmall {
-            //                     anchors.verticalCenter: parent.verticalCenter
-            //                     text: nodeText
-            //                     font.bold: true
-            //                     font.pointSize: 8
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            // Component {
-            //     id: listItemComponent
-            //     Rectangle {
-            //         width: 500 // 初始宽度
-            //         height: 30 // 初始高度
-            //         color: "white"
-            //         border.color: "black"
-            //         border.width: 1
-            //         property string nodeText: ""
-            //         Item {
-            //             width: parent.width
-            //             height: 30
-            //             BaseTextSmall {
-            //                 anchors.verticalCenter: parent.verticalCenter
-            //                 text: nodeText
-            //                 font.pointSize: 8
-            //             }
-            //         }
-            //     }
-            // }
-
-            Row{
+            Flickable{
                 anchors.fill: parent
-                ListView {
-                    id:mytree
-                    width: passagewayrect.width
-                    height: parent.height
-                    model: leafNodeModel // 使用单例对象
-                    delegate: Rectangle{
-                        width: parent.width
-                        height: select.height
-                        color: index%2===0?"#efefef":"#ffffff"
-                        Row{
-                            anchors.fill: parent
-                            Item {
-                                width: select.width
-                                height: parent.height
-                                BaseCheckBox{
-                                    anchors.centerIn: parent
-                                    checkBackColorVisible:false
-                                    onCheckedChanged: model.checked = checked
-                                }
-                            }
-                            Item {
-                                width: select.width
-                                height: parent.height
-                                visible: group
-                            }
-                            Item {
-                                width: select.width
-                                height: parent.height
-                                visible: group
-                            }
-                            Item {
-                                width: iditem.width+6
-                                height: parent.height
-                                BaseTextSmall{
-                                    anchors.centerIn: parent
-                                    text: model.text
-                                }
-                            }
-                            Item{
-                                width: coloritem.width+2
-                                height: parent.height
-                                Rectangle{
-                                    width: parent.height-10
-                                    height: parent.height-10
-                                    anchors.centerIn: parent
-                                    radius: 5
-                                    color: model.color
-                                }
-
-                            }
-                            Item{
-                                width: setitem.width+2
-                                height: parent.height
-                                Rectangle{
-                                    width: parent.height
-                                    height: parent.height
-                                    anchors.fill: parent
-                                    color: index%2===0?"#efefef":"#ffffff"
-                                    Image {
-                                        width: 15
-                                        height: 15
-                                        anchors.centerIn: parent
-                                        source: "qrc:/qml/images/RightIcon/set.png"
-                                    }
-                                    MouseArea{
-                                        anchors.fill: parent
-                                        onClicked: {
-                                            setpopup.visible=true
-                                            setpopup.width=listitem.width*2/3
-                                            setpopup.height=listitem.height
-                                            setpopup.x=listitem.x+listitem.width/3
-                                            setpopup.y=titlritem.y+titlritem.height
-                                            setpopup.name=model.text
-                                            setpopup.popcolor=model.color
-                                            currentIndex=index
-                                        }
-                                    }
-                                }
-                            }
-                            Item {
-                                width: useitem.width+8
-                                height: parent.height
-                                BaseSwitch{
-                                    switchWidth: parent.width
-                                    switchHeight: parent.height
-                                    anchors.centerIn: parent
-                                    switchText: ""
-                                    ischecked: true
-                                }
-                            }
-                            Item{
-                                id:save
-                                width: saveitem.width+2
-                                height: parent.height
-                                property bool issave: true
-                                Rectangle{
-                                    width: 20
-                                    height: 20
-                                    color: save.issave===false?"#ffffff":"red"
-                                    border.color: "#cfcfcf"
-                                    anchors.centerIn: parent
-                                    radius: 5
-                                    Rectangle{
-                                        width: 10
-                                        height: 10
-                                        color: save.issave===false?"#efefef":"#ffffff"
-                                        radius: 10
-                                        anchors.centerIn: parent
-                                        MouseArea{
-                                            anchors.fill: parent
-                                            onClicked: {
-                                                save.issave=!save.issave
-                                            }
-                                        }
-                                    }
-                                    MouseArea{
-                                        anchors.fill: parent
-                                        onClicked: {
-                                            save.issave=!save.issave
-                                        }
-                                    }
-                                }
-
-                            }
-                            Item{
-                                width: valueitem.width
-                                height: parent.height
-                                Column{
-                                    width: valueitem.width
-                                    height: parent.height
-                                    Row{
-                                        width: parent.width
-                                        height: parent.height/2
-                                        Item {
-                                            width: 30
-                                            height: parent.height
-                                            BaseTextSmall{
-                                                font.pointSize: 6
-                                                text: "NaN"
-                                            }
-                                        }
-                                        Item {
-                                            width: parent.width-60
-                                            height: parent.height
-                                        }
-                                        Item{
-                                            width: 30
-                                            height: parent.height
-                                            BaseTextSmall{
-                                                font.pointSize: 6
-                                                text: "平均值"
-                                            }
-                                        }
-                                    }
-                                    Rectangle{
-                                        width: parent.width
-                                        height: parent.height/2
-                                        border.color: "#cfcfcf"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                ListView {
-                    id:settree
-                    width: setrect.width
-                    height: parent.height
-                    model: leafNodeModel
-                    delegate: Rectangle{
-                        width: parent.width
-                        height: select.height
-                        color: index%2===0?"#efefef":"#ffffff"
-                        Row{
+                contentWidth: parent.width
+                contentHeight: parent.height
+                clip: true
+                ScrollBar.vertical: ScrollBar{}
+                Row{
+                    anchors.fill: parent
+                    ListView {
+                        id:mytree
+                        width: parent.width//passagewayrect.width
+                        height: parent.height
+                        model: MyListModel
+                        delegate: Rectangle{
+                            property double displayValue: 0.0
                             width: parent.width
-                            height: parent.height
-                            Item{
-                                width: mileageitem.width
-                                height:parent.height
-                                BaseTextSmall{
-                                    anchors.centerIn: parent
-                                    text: model.mileage
+                            height: isVisible==true?select.height:0
+                            color: isClicked==false?index%2===0?"#efefef":"#ffffff":"#b7c9db"
+                            border.color: isClicked==false?index%2===0?"#efefef":"#ffffff":"#6794c2"
+                            visible: isVisible
+                            MouseArea{
+                                anchors.fill: parent
+                                onClicked: {
+                                    isClicked=!isClicked
+                                    for(var i=0;i<boardcard2.count;i++)
+                                    {
+                                        if(MyListModel.get(index).activeDevice===boardcard2.get(i).activeDevice&&MyListModel.get(index).text===boardcard2.get(i).text)
+                                        {
+                                            boardcard2.get(i).isClicked=isClicked
+                                        }
+                                    }
                                 }
                             }
-                            Item{
-                                width: coefficientitem.width
-                                height: parent.height
-                                BaseTextSmall{
-                                    anchors.centerIn: parent
-                                    text: model.coefficient
+
+                            Row{
+                                anchors.fill: parent
+                                Row{
+                                    width: passagewayrect.width
+                                    height: parent.height
+                                    Item {
+                                        width: select.width
+                                        height: parent.height
+                                        BaseCheckBox{
+                                            id:treecheckbox
+                                            anchors.centerIn: parent
+                                            checkBackColorVisible:false
+                                            onCheckedChanged:{
+                                                model.checked = checked
+                                                isClicked=checked
+                                                for(var i=0;i<boardcard2.count;i++)
+                                                {
+                                                    if(MyListModel.get(index).activeDevice===boardcard2.get(i).activeDevice&&MyListModel.get(index).text===boardcard2.get(i).text)
+                                                    {
+                                                        boardcard2.get(i).isClicked=isClicked
+                                                    }
+                                                }
+                                            }
+                                            checked: isClicked
+
+                                        }
+                                    }
+                                    Item {
+                                        width: select.width
+                                        height: parent.height
+                                        visible: group
+                                    }
+                                    Item {
+                                        width: select.width
+                                        height: parent.height
+                                        visible: group
+                                    }
+                                    Item {
+                                        width: iditem.width+6
+                                        height: parent.height
+                                        BaseTextSmall{
+                                            anchors.centerIn: parent
+                                            text: model.text
+                                        }
+                                    }
+                                    Item{
+                                        width: coloritem.width+2
+                                        height: parent.height
+                                        Rectangle{
+                                            width: parent.height-10
+                                            height: parent.height-10
+                                            anchors.centerIn: parent
+                                            radius: 5
+                                            color: model.color
+                                        }
+
+                                    }
+                                    Item{
+                                        width: setitem.width+2
+                                        height: parent.height-2
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        Item{
+                                            width: parent.height
+                                            height: parent.height
+                                            anchors.fill: parent
+                                            Image {
+                                                width: 15
+                                                height: 15
+                                                anchors.centerIn: parent
+                                                source: "qrc:/qml/images/RightIcon/set.png"
+                                                MouseArea{
+                                                    anchors.fill: parent
+                                                    onClicked: {
+                                                        full2.waveformDisplay(index)
+                                                        setpopup.visible=true
+                                                        setpopup.width=listitem.width*2/3
+                                                        setpopup.height=listitem.height
+                                                        setpopup.x=listitem.x+listitem.width/3
+                                                        setpopup.y=titlritem.y+titlritem.height
+                                                        setpopup.name=model.text
+                                                        setpopup.popcolor=model.color
+                                                        currentIndex=index
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Item {
+                                        width: useitem.width+8
+                                        height: parent.height
+                                        BaseSwitch{
+                                            switchWidth: parent.width
+                                            switchHeight: parent.height
+                                            anchors.centerIn: parent
+                                            switchText: ""
+                                            ischecked: true
+                                        }
+                                    }
+                                    Item{
+                                        id:save
+                                        width: saveitem.width+2
+                                        height: parent.height
+                                        property bool issave: true
+                                        Rectangle{
+                                            width: 20
+                                            height: 20
+                                            color: save.issave===false?"#ffffff":"red"
+                                            border.color: "#cfcfcf"
+                                            anchors.centerIn: parent
+                                            radius: 5
+                                            Rectangle{
+                                                width: 10
+                                                height: 10
+                                                color: save.issave===false?"#efefef":"#ffffff"
+                                                radius: 10
+                                                anchors.centerIn: parent
+                                                MouseArea{
+                                                    anchors.fill: parent
+                                                    onClicked: {
+                                                        save.issave=!save.issave
+                                                    }
+                                                }
+                                            }
+                                            MouseArea{
+                                                anchors.fill: parent
+                                                onClicked: {
+                                                    save.issave=!save.issave
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                    Item{
+                                        width: valueitem.width
+                                        height: parent.height
+                                        Column{
+                                            width: valueitem.width
+                                            height: parent.height
+                                            Row{
+                                                width: parent.width
+                                                height: parent.height/2
+                                                Item {
+                                                    width: 30
+                                                    height: parent.height
+                                                    BaseTextSmall{
+                                                        font.pointSize: 6
+                                                        text: displayValue
+                                                    }
+                                                    Timer {
+                                                        interval: 200
+                                                        repeat: true
+                                                        running: true
+                                                        onTriggered: {
+                                                            displayValue = value
+                                                        }
+                                                    }
+                                                }
+                                                Item {
+                                                    width: parent.width-60
+                                                    height: parent.height
+                                                }
+                                                Item{
+                                                    width: 30
+                                                    height: parent.height
+                                                    BaseTextSmall{
+                                                        font.pointSize: 6
+                                                        text: "平均值"
+                                                    }
+                                                }
+                                            }
+                                            Rectangle{
+                                                width: parent.width
+                                                height: parent.height/2-4
+                                                border.color: "#cfcfcf"
+                                            }
+                                        }
+                                    }
+
+
+                                }
+                                Row{
+                                    width: setrect.width
+                                    height: parent.height
+                                    Item{
+                                        width: mileageitem.width
+                                        height:parent.height
+                                        BaseTextSmall{
+                                            anchors.centerIn: parent
+                                            text: model.mileage
+                                        }
+                                    }
+                                    Item{
+                                        width: coefficientitem.width
+                                        height: parent.height
+                                        BaseTextSmall{
+                                            anchors.centerIn: parent
+                                            text: model.coefficient
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
             }
         }
         Rectangle{
@@ -1109,28 +1188,24 @@ Rectangle{
                     MouseArea{
                         anchors.fill: parent
                         onClicked: {
-                            for (var i = leafNodeModel.count - 1; i >= 0; --i) {
-                                if (leafNodeModel.get(i).checked) {
-                                    leafNodeModel.remove(i);
+                            for (var i = MyListModel.rowCount() - 1; i >= 0; --i) {
+                                if (MyListModel.get(i).checked) {
+                                    MyListModel.remove(i);
                                 }
                             }
                         }
                     }
                 }
             }
-
-
         }
     }
-
-
 
     Rectangle{
         id:determine
         visible: false
         z:1
         width: 4
-        height: settree.height
+        height: mytree.height
         x: slidbarrect.x
         y: titlritem.y+60
         color: "#585858"

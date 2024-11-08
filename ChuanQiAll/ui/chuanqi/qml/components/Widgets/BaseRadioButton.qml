@@ -24,8 +24,8 @@ Rectangle {
     color: radioBackColor
     border.color: radioBorderColor
 
-    layer.enabled: true
-    layer.smooth: true
+    // layer.enabled: true
+    // layer.smooth: true
 
     onExclusiveGroupChanged: {
         if (exclusiveGroup) {

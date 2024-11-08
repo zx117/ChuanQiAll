@@ -11,12 +11,11 @@ Item {
 
 
     Component.onCompleted: {
-        spdlog.recordLog("TEXT",1,"testtest1111111")
         // pugixml.addMeasurementTree()
         // pugixml.setStructValue("Enclosure_Name","Local Ports")
         // pugixml.setStructValue("Enclosure_IsMainEnclosure",true)
         // pugixml.setStructValue("Enclosure_PluginId","86aa763f-8904-43dd-b0ec-ab7e70208e3e")
-        // pugixml.setStructValue("Enclosure_Id","10000")
+        //
         // pugixml.addEnclosure("MeasurementNode","Name","LocalNode")
         // pugixml.channelGroupandChannelStructAddValue("Status","Status_GPS_Mode","0xDAD4FFF300000001")
         // pugixml.channelGroupandChannelStructAddValue("Status","Status_Standstill","0xDAD4FFF300000002")

@@ -19,7 +19,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #指定qt所在目录
 if(WIN32)
-    set(CMAKE_PREFIX_PATH "D:/Qt/5.15.2/msvc_64") # Qt Kit Dir
+    set(CMAKE_PREFIX_PATH "D:/Qt/5.15.2/msvc2019_64") # Qt Kit Dir
 elseif(UNIX)
     set(CMAKE_PREFIX_PATH "/opt/Qt5.9.6/5.9.6/gcc_64")
 
@@ -30,8 +30,8 @@ elseif(UNIX)
 
 endif()
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Quick LinguistTools Widgets )
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Quick LinguistTools Widgets )
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Quick PrintSupport LinguistTools Widgets QuickWidgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Quick PrintSupport LinguistTools Widgets QuickWidgets)
 #cmake编译时包括自身所在目录
 #set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(QML_IMPORT_PATH "./qml/components" ${CMAKE_CURRENT_SOURCE_DIR}/qml/components CACHE STRING "" FORCE)
@@ -123,7 +123,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${LINK_DEPENDENCIES}
     Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick pugixml
     Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::QuickWidgets
     spdlog::spdlog
+    Qt5::PrintSupport
+    qcustomplot
     cqdaq-64-1-debug
     daqcoreobjects-64-1-debug
     daqcoretypes-64-1-debug
@@ -138,7 +141,7 @@ target_include_directories(
 
 
 #生成翻译文件
-qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+# qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -146,6 +149,9 @@ qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 #if(${QT_VERSION} VERSION_LESS 6.1.0)
 #  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.ChuanQiAll)
 #endif()
+
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}

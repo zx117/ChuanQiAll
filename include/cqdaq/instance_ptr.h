@@ -5,13 +5,15 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //
-//     RTGen (CppGenerator v5.0.0) on 20.07.2024 00:56:13.
+//     RTGen (CppGenerator v5.0.0) on 24.10.2024 06:57:26.
 // </auto-generated>
 //------------------------------------------------------------------------------
 #pragma once
 #include <coretypes/coretypes.h>
 #include "cqdaq/instance.h"
 #include <cqdaq/device.h>
+#include <cqdaq/ncc_ptr.h>
+#include <cqdaq/data_center_ptr.h>
 #include <cqdaq/module_manager_ptr.h>
 #include <coretypes/string_ptr.h>
 #include <coreobjects/property_object_ptr.h>
@@ -126,6 +128,42 @@ public:
         GenericDevicePtr<IInstance>::operator =(std::move(other));
 
         return *this;
+    }
+
+
+    /*!
+     * @brief Gets the ncc manager.
+
+     * @returns The ncc manager.
+     */
+    daq::NccPtr getNccManager() const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
+
+        daq::NccPtr ncc;
+        auto errCode = this->object->getNccManager(&ncc);
+        daq::checkErrorInfo(errCode);
+
+        return ncc;
+    }
+
+
+    /*!
+     * @brief Gets the ncc manager.
+
+     * @param[out] ncc The ncc manager.
+     */
+    daq::DataCenterPtr getDataCenter() const
+    {
+        if (this->object == nullptr)
+            throw daq::InvalidParameterException();
+
+        daq::DataCenterPtr dc;
+        auto errCode = this->object->getDataCenter(&dc);
+        daq::checkErrorInfo(errCode);
+
+        return dc;
     }
 
 

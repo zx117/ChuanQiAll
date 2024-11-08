@@ -11,8 +11,11 @@ add_definitions(-DCQDAQ_TRACK_SHARED_LIB_OBJECT_COUNT=1)
 # set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 #设定c++标准
+set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 
 set(BOOST_ROOT "C:/boost_1_79_0")
 find_package(Boost REQUIRED)
@@ -27,9 +30,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../../../bin/debug)
 
 # 定义debug后缀_d
-set(CMAKE_DEBUG_POSTFIX -d.module)
+set(CMAKE_DEBUG_POSTFIX _d.module)
 
-file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.cpp include/*.h)
+file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.cpp include/*.h include/*.hpp)
 
 add_library(${LIB_NAME} SHARED
     ${srcs}

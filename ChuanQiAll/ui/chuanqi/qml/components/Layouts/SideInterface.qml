@@ -12,6 +12,8 @@ Item {
     signal hideApp(int num)
     signal sidebarChangel()
     property int appNum: -1
+
+
     onWidthChanged: {
         if(sidebar.state==="hidescreen")
         {

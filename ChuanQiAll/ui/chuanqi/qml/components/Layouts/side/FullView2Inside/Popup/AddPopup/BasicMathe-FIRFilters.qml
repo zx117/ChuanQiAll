@@ -1,7 +1,6 @@
 ﻿import QtQuick 2.15
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
-import MyTreeModel 1.0
 import Widgets 1.0
 import Themes 1.0
 Item {
@@ -21,39 +20,35 @@ Item {
             }
             Item{
                 width: parent.width
-                height: 30
+                height: 40
                 Row{
                     anchors.fill: parent
                     spacing: 10
                     ExclusiveGroup { id: buttonGroup }
                     BaseRadioButton{
-                        radioWidth: 100
-                        radioHeight: 30
+                        radioWidth: 120
+                        radioHeight: 40
                         radioButtonText: "低通滤波"
                         exclusiveGroup: buttonGroup
-                        enabled: true
                         checked: true
                     }
                     BaseRadioButton{
-                        radioWidth: 100
-                        radioHeight: 30
+                        radioWidth: 120
+                        radioHeight: 40
                         radioButtonText: "高通滤波"
                         exclusiveGroup: buttonGroup
-                        enabled: true
                     }
                     BaseRadioButton{
-                        radioWidth: 100
-                        radioHeight: 30
+                        radioWidth: 120
+                        radioHeight: 40
                         radioButtonText: "带通"
                         exclusiveGroup: buttonGroup
-                        enabled: true
                     }
                     BaseRadioButton{
-                        radioWidth: 100
-                        radioHeight: 30
+                        radioWidth: 120
+                        radioHeight: 40
                         radioButtonText: "带阻"
                         exclusiveGroup: buttonGroup
-                        enabled: true
                     }
                 }
             }

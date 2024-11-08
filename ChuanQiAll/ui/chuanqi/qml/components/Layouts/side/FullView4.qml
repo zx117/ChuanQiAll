@@ -14,7 +14,6 @@ Item{
         appNum=value
         if (menuloader.item&&menuloader.item.upAppInterFace) {
            menuloader.item.upAppInterFace(appNum)
-           console.log("appNum2",appNum)
         }
     }
     anchors.fill: parent

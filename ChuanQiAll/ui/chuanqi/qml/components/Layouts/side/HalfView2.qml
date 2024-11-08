@@ -1,47 +1,50 @@
 ﻿import QtQuick 2.15
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.1
-import MyTreeModel 1.0
 import Widgets 1.0
 import Themes 1.0
+import MyListModel 1.0
+import GraphicDraw 1.0
 Rectangle{
     anchors.fill: parent
     property RectangelStyle sideBarInterface :SkinManager.currentSkin.sideBarInterface
     property bool isChecked: false
     property bool group: false
+    property bool isInitialized: false
     color: sideBarInterface.backgroundColor
     border.color: sideBarInterface.borderColor
-    ListModel {
-        id: treeModel
-        ListElement { name: "1"; text:"LocalNode";parent:"" }
-        ListElement { name: "2"; text:"ADMA Enclosure";parent:"1" }
-        ListElement { name: "3"; text:"ADMA Stream1";parent:"2" }
-        ListElement { name: "4"; text:"Static-Header";parent:"3" }
-        ListElement { name: "5"; text:"Alias";color:"red";mileage:"0~15";coefficient:"1";bias:"0";parent:"4" }
-        ListElement { name: "6"; text:"Status";parent:"3" }
-        ListElement { name: "7"; text:"Status_GPS_Moder";color:"blue";mileage:"0~1";coefficient:"1";bias:"0";parent:"6" }
-        ListElement { name: "8"; text:"Status_Standstill";color:"green";mileage:"0~1";coefficient:"1";bias:"0";parent:"6" }
-        ListElement { name: "9"; text:"Status_Standstill2";color:"yellow";mileage:"0~1";coefficient:"1";bias:"0";parent:"6" }
-    }
-    ListModel {
-        id: leafNodeModel
-    }
+
 
     Component.onCompleted: {
-        for (var i = 0; i < treeModel.count; i++) {
-            var node = treeModel.get(i)
-            var hasChildren = false
-            for (var j = 0; j < treeModel.count; j++) {
-                if (treeModel.get(j).parent === node.name) {
-                    hasChildren = true
-                    break
-                }
+        for(var i=0;i<getdevinf.getActivateDeviceNumber();i++)
+        {
+            pugixml.setStructValue("Device_Name",getdevinf.getActivateDeviceName(i))
+            pugixml.addDevice("Enclosure","Name","LocalNode")
+            var num=getdevinf.getActiveDeviceChannelsNum(i)
+            var devicename=getdevinf.getActivateDeviceName(i)
+            for(var j=0;j<num;j++)
+            {
+                getdevinf.getDeviceData(i,j,0);
+                pugixml.channelGroupandChannelStructAddValue(getdevinf.getChannelGroupName(i),getdevinf.getActiveDeviceChannelsName(i,j)
+                                                             ,"0xDAD4FFF300000001")
+
             }
-            if (!hasChildren && node.parent !== "") {
-                leafNodeModel.append(node)
-            }
+            pugixml.addChannelGroup("Device","Name",getdevinf.getActivateDeviceName(i))
         }
     }
+    //获取通道数据，并更新数据
+    Connections {
+        target: getdevinf
+        function onDeviceDataListChanged(threadid){
+            getdevinf.upDateDeviceData(threadid);
+        }
+    }
+    Connections {
+        target: MyListModel
+        function onReturnIndexValue(index,data) {
+        }
+    }
+
     Column {
         width: parent.width/5
         height: parent.height
@@ -183,16 +186,15 @@ Rectangle{
 
                     }
 
-
                     ListView {
                         id:mytree
                         width: parent.width
                         height: parent.height-90
-                        model: leafNodeModel // 使用单例对象
+                        model: MyListModel
                         delegate: Rectangle{
                             width: parent.width
                             height: 30
-                            color: index%2===0?"#efefef":"#ffffff"
+                            color: isClicked==false?index%2===0?"#efefef":"#ffffff":"#b7c9db"
                             Item{
                                 anchors.fill: parent
                                 Item {
@@ -218,12 +220,21 @@ Rectangle{
 
                                 }
                             }
+                            MouseArea{
+                                anchors.fill: parent
+                                onClicked: {
+                                    for(var i=0;i<MyListModel.rowCount();i++)
+                                    {
+                                        if(index===i)
+                                        {
+                                            getdevinf.setAttributeValue(i,4,true)
+                                        }
+                                    }
+                                }
+                            }
                         }
-
                     }
-
                 }
-
             }
         }
     }

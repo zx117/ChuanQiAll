@@ -35,7 +35,6 @@ AbstractApp* AppHost::thisApp(QString name)
 
 void AppHost::loadApp(QVariant app_index, QObject* item, QString ui_name ,QVariant param)
 {
-    qDebug() <<Q_FUNC_INFO<<ui_name;
     QString name = m_app_infos.at(app_index.toInt()).app_name;
     auto app = m_apps[name];
     if(ui_name=="Main")

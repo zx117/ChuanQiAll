@@ -17,6 +17,16 @@ ApplicationWindow {
     visibility: Window.Maximized
     visible: true
 
+    Component.onCompleted: {
+        getdevinf.initializationDeviceModel()
+        pugixml.addMeasurementTree()
+        pugixml.setStructValue("Enclosure_Name","Local Ports")
+        pugixml.setStructValue("Enclosure_IsMainEnclosure",true)
+        pugixml.setStructValue("Enclosure_PluginId","86aa763f-8904-43dd-b0ec-ab7e70208e3e")
+        pugixml.setStructValue("Enclosure_Id","10000")
+        pugixml.addEnclosure("MeasurementNode","Name","LocalNode")
+    }
+
     OpenDataFile{
         id:opendatafile
         anchors.centerIn: parent
@@ -59,7 +69,4 @@ ApplicationWindow {
             savesetfile.open()
         }
     }
-
-
-
 }

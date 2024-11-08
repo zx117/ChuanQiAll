@@ -2,11 +2,14 @@
 
 #pragma once
 #include <cqdaq/device_ptr.h>
+#include <cqdaq/ncc_ptr.h>
 #include <cqdaq/instance.h>
 #include <coreobjects/property_object_impl.h>
 #include <cqdaq/context_ptr.h>
 #include <cqdaq/module_manager_ptr.h>
 #include <cqdaq/function_block_ptr.h>
+#include <cqdaq/data_center_config.h>
+#include <cqdaq/data_center_ptr.h>
 
 BEGIN_NAMESPACE_CQDAQ
 
@@ -18,6 +21,8 @@ public:
     ~InstanceImpl() override;
 
     // IInstance
+    ErrCode INTERFACE_FUNC getNccManager(INcc** ncc) override;
+    ErrCode INTERFACE_FUNC getDataCenter(IDataCenter** dc) override;
     ErrCode INTERFACE_FUNC getContext(IContext** context) override;
     ErrCode INTERFACE_FUNC getModuleManager(IModuleManager** manager) override;
 
@@ -61,8 +66,9 @@ public:
     // IDeviceDomain
     ErrCode INTERFACE_FUNC getTicksSinceOrigin(uint64_t* ticks) override;
 
-    // IComponent
+    ErrCode INTERFACE_FUNC setDataCenter(IDataCenterConfig* dcConfig) override;
 
+    // IComponent
     ErrCode INTERFACE_FUNC getLocalId(IString** localId) override;
     ErrCode INTERFACE_FUNC getGlobalId(IString** globalId) override;
     ErrCode INTERFACE_FUNC getActive(Bool* active) override;
@@ -81,7 +87,6 @@ public:
     ErrCode INTERFACE_FUNC findComponent(IString* id, IComponent** outComponent) override;
 
     // IFolder
-
     ErrCode INTERFACE_FUNC getItems(IList** items, ISearchFilter* searchFilter) override;
     ErrCode INTERFACE_FUNC getItem(IString* localId, IComponent** item) override;
     ErrCode INTERFACE_FUNC isEmpty(Bool* empty) override;
@@ -127,7 +132,10 @@ public:
 
 private:
     DevicePtr rootDevice;
+    //DataCenterConfigPtr spaceConfig;
+
     ContextPtr context;
+    NccPtr  ncc;
     ModuleManagerPtr moduleManager;
     LoggerComponentPtr loggerComponent;
 

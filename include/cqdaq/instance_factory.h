@@ -78,6 +78,11 @@ inline DevicePtr Client(const ContextPtr& context, const StringPtr& localId, con
     DevicePtr obj(Client_Create(context, localId, defaultDeviceInfo, parent));
     return obj;
 }
+inline DevicePtr DataCenter(const ContextPtr& context, const StringPtr& localId, const DeviceInfoPtr& defaultDeviceInfo = nullptr, const ComponentPtr& parent = nullptr)
+{
+    DevicePtr obj(DataCenter_Create(context, localId, defaultDeviceInfo, parent));
+    return obj;
+}
 
 /*!@}*/
 

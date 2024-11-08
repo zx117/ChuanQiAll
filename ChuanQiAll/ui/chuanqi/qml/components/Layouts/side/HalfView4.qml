@@ -13,7 +13,6 @@ Rectangle {
         if(value>=0)
         {
             AppHost.loadApp(value,appset,"AppSet")
-            console.log(value)
         }
 
     }

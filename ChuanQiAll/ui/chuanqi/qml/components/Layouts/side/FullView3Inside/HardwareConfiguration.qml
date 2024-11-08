@@ -7,7 +7,14 @@ Rectangle{
     property RectangelStyle sideBarInterface: SkinManager.currentSkin.sideBarInterface
     color: sideBarInterface.backgroundColor
     border.color: sideBarInterface.borderColor
-
+    Component.onCompleted: {
+        for(var i=0;i<getdevinf.getRootDeviceNumber();i++)
+        {
+            listmodel.append({"txt": getdevinf.getRootDeviceName(i),"isvisible":false})
+            pugixml.setStructValue("Device_Name",getdevinf.getRootDeviceName(i))
+            pugixml.addDevice("Enclosure","Name","LocalNode")
+        }
+    }
     Item {
         id:setif
         width: parent.width-20
@@ -15,16 +22,6 @@ Rectangle{
         anchors.centerIn: parent
         ListModel{
             id:listmodel
-            ListElement{txt:"ADMA";isvisible:false}
-            ListElement{txt:"CAMERA";isvisible:false}
-            ListElement{txt:"DAQP";isvisible:false}
-            ListElement{txt:"EPAD";isvisible:false}
-            ListElement{txt:"GIGECAMERA";isvisible:false}
-            ListElement{txt:"ORIONDAQ";isvisible:false}
-            ListElement{txt:"ORIONDSA";isvisible:false}
-            ListElement{txt:"OXTS";isvisible:false}
-            ListElement{txt:"TRION";isvisible:false}
-            ListElement{txt:"VECTOR";isvisible:false}
         }
         Column{
             width: parent.width
@@ -65,6 +62,10 @@ Rectangle{
                             width: setif.width/2-100
                             height: 40
                             color: index % 2 === 0? "#efefef" : "white"
+                            Component.onCompleted: {
+                                hdbs.ischecked=getdevinf.getDeviceActive(index)
+                            }
+
                             BaseSwitch{
                                 id:hdbs
                                 height: 20
@@ -83,14 +84,15 @@ Rectangle{
                                         else if (component.status === Component.Error) {
                                             console.log("Error loading component:", component.errorString());
                                         }
+                                        getdevinf.setDeviceActive(index,true)
                                     }
                                     else{
                                         if (createdComponent) {
                                             createdComponent.destroy();
                                         }
+                                        getdevinf.setDeviceActive(index,false)
                                     }
                                 }
-
                             }
                         }
                     }

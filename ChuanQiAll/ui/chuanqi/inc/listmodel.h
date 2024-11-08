@@ -2,28 +2,23 @@
 #define LISTMODEL_H
 
 #include <QAbstractListModel>
-class MyData{
-public:
-    MyData(QString s,int v):myString(s),myValue(v){};
-    QString myString;
-    int myValue;
-
-};
-
+#include <QVariantList>
+#include <QDebug>
 class ListModel : public QAbstractListModel
 {
     Q_OBJECT
-
 public:
-    enum MyRoleName{
-        Name=Qt::DisplayRole+1,
-        Value
+    enum DeviceRoles {
+        TextRole = 0,
+        ActiveDeviceRole,
+        ValueRole,
+        TimeRole,
+        IsClickedRole,
+        IsVisibleRole
     };
-    Q_ENUM(MyRoleName);
+    Q_ENUM(DeviceRoles);
 
     explicit ListModel(QObject *parent = nullptr);
-    //获取实例
-    static ListModel* getInstance();
     // Header:
     QVariant headerData(int section,
                         Qt::Orientation orientation,
@@ -37,9 +32,15 @@ public:
     QHash<int,QByteArray> roleNames() const override;
 
     QString getSomeValue();
+    bool setData(const QModelIndex &index, const QVariant &value, int role)  override;
+    void setDeviceData(const QVariantList &dataList);
+    Q_INVOKABLE void upData(int index, const QVariantMap &newData);
+    Q_INVOKABLE QVariant get(int row);
+    Q_INVOKABLE void upDateAttribute(int index, int role, const QVariant &value);
 private:
-    QList<MyData> myData;
-
+    QList<QVariantMap> deviceDataList;
+signals:
+    void returnIndexValue(int index,QVariant value);
 
 
 };

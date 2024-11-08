@@ -146,7 +146,7 @@ PugiXMLInterface::~PugiXMLInterface()
  */
 void PugiXMLInterface::initialization(const QString&filepath)
 {
-    pugi::xml_parse_result result = doc.load_file(std::string(filepath.toLocal8Bit()).c_str());
+    pugi::xml_parse_result result = doc.load_file(std::string(filepath.toUtf8()).c_str());
     if (!result) {
         qDebug()<<Q_FUNC_INFO<<"Load result: " << result.description();
     }
@@ -481,7 +481,7 @@ QVariant PugiXMLInterface::getNodeValue(const QString &parentNode, const QString
     if(getNode)
     {
 
-        value=getNode.child(childNodeName.toLocal8Bit().constData()).child_value();
+        value=getNode.child(childNodeName.toUtf8().constData()).child_value();
     }
     return value;
 }
@@ -501,7 +501,7 @@ QVariant PugiXMLInterface::getAttributeValue(const QString &parentNode,const QSt
     QString value;
     if(getNode)
     {
-        value=getNode.child(childNodeName.toLocal8Bit().constData()).attribute(childAttribute.toLocal8Bit().constData()).value();
+        value=getNode.child(childNodeName.toUtf8().constData()).attribute(childAttribute.toUtf8().constData()).value();
     }
     return value;
 }
@@ -519,10 +519,10 @@ void PugiXMLInterface::setNodeValue(const QString &parentNode, const QString &pa
     pugi::xml_node getNode=findNodeByName(doc,parentNode,parentAttribute,parentAttributeValue);
     if(getNode)
     {
-       QVariant value=getNode.child(childNodeName.toLocal8Bit().constData()).child_value();
+       QVariant value=getNode.child(childNodeName.toUtf8().constData()).child_value();
        if(childNodeOldValue==value)
        {
-           getNode.child(childNodeName.toLocal8Bit().constData()).text().set(childNodeNewValue.toString().toLocal8Bit().constData());
+           getNode.child(childNodeName.toUtf8().constData()).text().set(childNodeNewValue.toString().toUtf8().constData());
        }
     }
 }
@@ -542,10 +542,10 @@ void PugiXMLInterface::setAttributeValue(const QString &parentNode, const QStrin
     pugi::xml_node getNode=findNodeByName(doc,parentNode,parentAttribute,parentAttributeValue);
     if(getNode)
     {
-        QVariant value=getNode.child(childNodeName.toLocal8Bit().constData()).attribute(childAttribute.toLocal8Bit().constData()).value();
+        QVariant value=getNode.child(childNodeName.toUtf8().constData()).attribute(childAttribute.toUtf8().constData()).value();
         if(childAttributeOldValue==value)
         {
-            getNode.child(childNodeName.toLocal8Bit().constData()).attribute(childAttribute.toLocal8Bit().constData()).set_value(childAttributeNewValue.toString().toLocal8Bit().constData());
+            getNode.child(childNodeName.toUtf8().constData()).attribute(childAttribute.toUtf8().constData()).set_value(childAttributeNewValue.toString().toUtf8().constData());
         }
     }
 }
@@ -657,7 +657,7 @@ void PugiXMLInterface::addBus(const QString &parentNode, const QString &attribut
         for(int i=0;i<slotsize;i++)
         {
             pugi::xml_node slot =findOrAddChild(bus,"Slot","Id",QString::number(i));
-            findOrAddAttribute(slot,"Id",std::string(QString::number(i).toLocal8Bit()).c_str());
+            findOrAddAttribute(slot,"Id",std::string(QString::number(i).toUtf8()).c_str());
         }
     }
     saveInformation();
@@ -990,12 +990,12 @@ void PugiXMLInterface::addAcqSourceOrChainElementConfig(const QString &id,const 
  */
 pugi::xml_node PugiXMLInterface::findOrAddChild(pugi::xml_node parent, const QString &name,const QString &attribute,const QString &value) {
     // 查找子节点，如果不存在则添加
-    pugi::xml_node node = parent.child(std::string(name.toLocal8Bit()).c_str());
+    pugi::xml_node node = parent.child(std::string(name.toUtf8()).c_str());
     bool createNewNode = false;
     // 遍历所有同名子节点
-    for (pugi::xml_node sibling = node; sibling; sibling = sibling.next_sibling(std::string(name.toLocal8Bit()).c_str())) {
+    for (pugi::xml_node sibling = node; sibling; sibling = sibling.next_sibling(std::string(name.toUtf8()).c_str())) {
         // 比较属性值
-        if (sibling.attribute(std::string(attribute.toLocal8Bit()).c_str()).value() == value) {
+        if (sibling.attribute(std::string(attribute.toUtf8()).c_str()).value() == value) {
             createNewNode = true;
             node=sibling;
             break;
@@ -1008,15 +1008,15 @@ pugi::xml_node PugiXMLInterface::findOrAddChild(pugi::xml_node parent, const QSt
         }
     }
     if (!createNewNode) {
-        node = parent.append_child(std::string(name.toLocal8Bit()).c_str());
+        node = parent.append_child(std::string(name.toUtf8()).c_str());
     }
     if(attribute==""&&value!="")
     {
         pugi::xml_node textNode = node.first_child();
         if (textNode.type() == pugi::node_pcdata) {
-            textNode.set_value(value.toLocal8Bit().constData());
+            textNode.set_value(value.toUtf8().constData());
         } else {
-            node.append_child(pugi::node_pcdata).set_value(value.toLocal8Bit().constData());
+            node.append_child(pugi::node_pcdata).set_value(value.toUtf8().constData());
         }
     }
     return node;
@@ -1029,17 +1029,17 @@ pugi::xml_node PugiXMLInterface::findOrAddChild(pugi::xml_node parent, const QSt
  */
 void PugiXMLInterface::findOrAddAttribute(pugi::xml_node node, const QString &name, const QString &value) {
     // 查找属性，如果不存在则添加，如果存在则更新
-    pugi::xml_attribute attr = node.attribute(std::string(name.toLocal8Bit()).c_str());
+    pugi::xml_attribute attr = node.attribute(std::string(name.toUtf8()).c_str());
     if (!attr) {
         if(value!="")
         {
-            node.append_attribute(std::string(name.toLocal8Bit()).c_str()).set_value(std::string(value.toLocal8Bit()).c_str());
+            node.append_attribute(std::string(name.toUtf8()).c_str()).set_value(std::string(value.toUtf8()).c_str());
         }
     } else {
         if(value!="")
         {
 
-            attr.set_value(std::string(value.toLocal8Bit()).c_str());
+            attr.set_value(std::string(value.toUtf8()).c_str());
         }
     }
 }
@@ -1051,7 +1051,7 @@ void PugiXMLInterface::findOrAddAttribute(pugi::xml_node node, const QString &na
  */
 pugi::xml_node PugiXMLInterface::findChannelGroupByName(pugi::xml_node& root, const QString &nodename, const QString &key , const QString &value) {
     for (pugi::xml_node node = root.first_child(); node; node = node.next_sibling()) {
-        if (std::string(node.name()) == std::string(nodename.toLocal8Bit()).c_str() && node.attribute(std::string(key.toLocal8Bit()).c_str()).value() == value) {
+        if (std::string(node.name()) == std::string(nodename.toUtf8()).c_str() && node.attribute(std::string(key.toUtf8()).c_str()).value() == value) {
             return node; // 返回匹配的节点
         }
         // 递归遍历子节点
@@ -1109,7 +1109,7 @@ pugi::xml_node PugiXMLInterface::findNodeByNameRecursive(pugi::xml_node node, co
 void PugiXMLInterface::saveInformation()
 {
     QString filepath=QCoreApplication::applicationDirPath()+"/xmldms/configurationfiles.xml";
-    doc.save_file(std::string(filepath.toLocal8Bit()).c_str());
+    doc.save_file(std::string(filepath.toUtf8()).c_str());
 }
 /**
  * @brief PugiXMLInterface::importConfigurationFile  导入配置文件
@@ -1119,7 +1119,7 @@ void PugiXMLInterface::importConfigurationFile(const QString&path)
 {
     filepath=path;
     //加载配置文件
-    pugi::xml_parse_result result = doc.load_file(std::string(path.toLocal8Bit()).c_str());
+    pugi::xml_parse_result result = doc.load_file(std::string(path.toUtf8()).c_str());
     if (!result) {
         qDebug()<<Q_FUNC_INFO<<"Load result: " << result.description();
     }
@@ -1135,7 +1135,7 @@ void PugiXMLInterface::importConfigurationFile(const QString&path)
 void PugiXMLInterface::exportConfigurationFile(const QString &path)
 {
     //保存配置文件
-    bool save=doc.save_file(std::string(path.toLocal8Bit()).c_str());
+    bool save=doc.save_file(std::string(path.toUtf8()).c_str());
     if(!save)
     {
         qDebug()<<Q_FUNC_INFO<<"Save fail";

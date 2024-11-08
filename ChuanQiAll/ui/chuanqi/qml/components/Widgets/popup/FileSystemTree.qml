@@ -11,7 +11,6 @@ import Themes 1.0
 Item{
     id:flickable
     property var treeModel: null
-
     TreeView{
         id:myTree
         width: parent.width

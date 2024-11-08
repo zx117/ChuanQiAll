@@ -1,10 +1,10 @@
-#ifndef CHANNELDATAMANAGER_H
-#define CHANNELDATAMANAGER_H
+// #ifndef CHANNELDATAMANAGER_H
+// #define CHANNELDATAMANAGER_H
 
-class ChannelDataManager
-{
-public:
-    ChannelDataManager();
-};
+// class ChannelDataManager
+// {
+// public:
+//     ChannelDataManager();
+// };
 
-#endif // CHANNELDATAMANAGER_H
+// #endif // CHANNELDATAMANAGER_H
